@@ -1,0 +1,75 @@
+name: ethereum-data-leveldb
+version: 0.0.4
+cabal-version: >=1.10
+build-type: Simple
+author: Jamshid
+license-file:  LICENSE
+maintainer:    jamshidnh@gmail.com
+synopsis: A Haskell version of an Ethereum client
+extra-source-files:
+               fastNonceFinder/bitfn.h
+               fastNonceFinder/sha3.c
+               fastNonceFinder/sha3.h
+category:      Data Structures
+license: BSD3
+description:  
+    The client described in the Ethereum Yellowpaper
+
+source-repository this
+  type:     git
+  location: https://github.com/jamshidh/ethereum-client-haskell
+  branch:   master
+  tag:      v0.0.4
+
+library
+    default-language: Haskell98
+    build-depends: 
+                   base >= 4 && < 5
+                 , base16-bytestring
+                 , binary
+                 , bytestring
+                 , containers
+                 , cryptohash
+                 , data-default
+                 , directory
+                 , either
+                 , entropy
+                 , ethereum-merkle-patricia-db
+                 , ethereum-rlp
+                 , filepath
+                 , haskoin
+                 , leveldb-haskell
+                 , mtl
+                 , network
+                 , nibblestring
+                 , resourcet
+                 , SHA2
+                 , time
+                 , transformers
+                 , vector
+                 , ansi-wl-pprint
+    exposed-modules: 
+                   Blockchain.Colors
+                   Blockchain.Constants
+                   Blockchain.DBM
+                   Blockchain.Data.Address
+                   Blockchain.Data.AddressState
+                   Blockchain.Data.Block
+                   Blockchain.Data.Code
+                   Blockchain.Data.Log
+                   Blockchain.Data.Peer
+                   Blockchain.Data.SignedTransaction
+                   Blockchain.Data.Transaction
+                   Blockchain.Data.TransactionReceipt
+                   Blockchain.Data.Wire
+                   Blockchain.DB.CodeDB
+                   Blockchain.ExtDBs
+                   Blockchain.Format
+                   Blockchain.ExtWord
+                   Blockchain.SHA
+                   Blockchain.Util
+    C-sources: fastNonceFinder/nonceFinder.c
+    ghc-options: -Wall
+    buildable: True
+    hs-source-dirs: src
+
