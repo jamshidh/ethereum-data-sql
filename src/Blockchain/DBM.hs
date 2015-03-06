@@ -23,7 +23,6 @@ import System.FilePath
 
 import Blockchain.Constants
 import Blockchain.Database.MerklePatricia
-import Blockchain.Data.Peer
 
 --import Debug.Trace
 
