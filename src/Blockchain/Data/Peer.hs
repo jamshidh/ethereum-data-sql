@@ -1,3 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.Peer (
   Peer(..)
@@ -15,10 +25,11 @@ import Blockchain.Data.RLP
 
 --instance Show Block where
 --  show x = "<BLOCK>"
+import Database.Persist
+import Database.Persist.Types
+import Database.Persist.TH
 
-
-
-data IPAddr = IPAddr Word8 Word8 Word8 Word8 deriving (Show)
+data IPAddr = IPAddr Word8 Word8 Word8 Word8 deriving (Show, Read, Eq)
 
 instance Format IPAddr where
   format (IPAddr v1 v2 v3 v4) = show v1 ++ "." ++ show v2 ++ "." ++ show v3 ++ "." ++ show v4 
@@ -27,7 +38,7 @@ data Peer = Peer {
   ipAddr::IPAddr,
   peerPort::Word16,
   uniqueId::String
-  } deriving (Show)
+  } deriving (Show, Read, Eq)
 
 instance Format Peer where
   format peer = format (ipAddr peer) ++ ":" ++ show (peerPort peer)

@@ -1,3 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Util (
   byteString2Integer,
@@ -21,6 +31,12 @@ import Data.List
 import Data.Word
 import Network.Haskoin.Crypto (Word160, Word256)
 import Numeric
+
+import Database.Persist
+import Database.Persist.TH
+
+-- no better place for this: must be imported due to GHC stage restriction
+derivePersistField "Integer"
 
 --I hate this, it is an ugly way to create an Integer from its component bytes.
 --There should be an easier way....

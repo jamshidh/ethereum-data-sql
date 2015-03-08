@@ -1,3 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.SHA (
   SHA(..),
@@ -22,7 +32,14 @@ import Blockchain.Data.RLP
 import Blockchain.Database.MerklePatricia
 import Blockchain.Util
 
-newtype SHA = SHA Word256 deriving (Show, Eq)
+import qualified Database.Persist as P
+import Database.Persist.Types
+import Database.Persist.TH
+
+newtype SHA = SHA Word256 deriving (Show, Eq, Read)
+
+derivePersistField "SHA"
+derivePersistField "SHAPtr"
 
 instance Pretty SHA where
   pretty (SHA x) = yellow $ text $ padZeros 64 $ showHex x ""

@@ -1,4 +1,13 @@
 {-# LANGUAGE OverloadedStrings, ForeignFunctionInterface #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.Block (
   BlockData(..),
@@ -13,6 +22,10 @@ module Blockchain.Data.Block (
   getBlock,
   putBlock
   ) where
+
+import Database.Persist
+import Database.Persist.Types
+import Database.Persist.TH
 
 import qualified Crypto.Hash.SHA3 as C
 import Data.Binary
@@ -44,6 +57,32 @@ import Blockchain.Util
 
 --import Debug.Trace
 
+{-
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+BlockData
+    parentHash SHA
+    unclesHash SHA
+    coinbase Address
+    bStateRoot SHAPtr
+    transactionsRoot SHAPtr
+    receiptsRoot SHAPtr
+    logBloom B.ByteString
+    difficulty Integer
+    number Integer
+    gasLimit Integer
+    gasUsed Integer
+    timestamp UTCTime
+    extraData Integer
+    nonce SHA
+    deriving Show Read Eq
+
+Block
+    blockData BlockData
+    receiptTransactions [SignedTransaction]
+    blockUncles [BlockData]
+|]
+-}
+
 data BlockData = BlockData {
   parentHash::SHA,
   unclesHash::SHA,
@@ -59,13 +98,16 @@ data BlockData = BlockData {
   timestamp::UTCTime,
   extraData::Integer,
   nonce::SHA
-} deriving (Show)
+} deriving (Show, Read, Eq)
 
 data Block = Block {
   blockData::BlockData,
   receiptTransactions::[SignedTransaction],
   blockUncles::[BlockData]
-  } deriving (Show)
+  } deriving (Show, Read, Eq)
+
+derivePersistField "BlockData"
+derivePersistField "Block"
 
 instance Format Block where
   format b@Block{blockData=bd, receiptTransactions=receipts, blockUncles=uncles} =

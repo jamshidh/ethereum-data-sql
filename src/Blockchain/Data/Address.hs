@@ -1,3 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.Address (
   Address(..),
@@ -22,7 +32,14 @@ import Blockchain.Data.RLP
 import Blockchain.SHA
 import Blockchain.Util
 
-newtype Address = Address Word160 deriving (Show, Eq)
+import qualified Database.Persist as P 
+import Database.Persist.Types
+import Database.Persist.TH
+
+newtype Address = Address Word160 deriving (Show, Eq, Read)
+
+derivePersistField "Address"
+
 
 instance Pretty Address where
   pretty (Address x) = yellow $ text $ padZeros 40 $ showHex x ""

@@ -1,5 +1,5 @@
-name: ethereum-data-leveldb
-version: 0.0.4
+name: ethereum-data-sql
+version: 0.0.1
 cabal-version: >=1.10
 build-type: Simple
 author: Jamshid
@@ -19,7 +19,7 @@ source-repository this
   type:     git
   location: https://github.com/jamshidh/ethereum-client-haskell
   branch:   master
-  tag:      v0.0.4
+  tag:      v0.0.1
 
 library
     default-language: Haskell98
@@ -48,6 +48,9 @@ library
                  , transformers
                  , vector
                  , ansi-wl-pprint
+                 , persistent
+                 , persistent-template
+                 , persistent-postgresql
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
@@ -59,6 +62,7 @@ library
                    Blockchain.Data.Log
                    Blockchain.Data.Peer
                    Blockchain.Data.SignedTransaction
+                   Blockchain.Data.Sql
                    Blockchain.Data.Transaction
                    Blockchain.Data.TransactionReceipt
                    Blockchain.Data.Wire
@@ -68,6 +72,8 @@ library
                    Blockchain.ExtWord
                    Blockchain.SHA
                    Blockchain.Util
+    
+
     C-sources: fastNonceFinder/nonceFinder.c
     ghc-options: -Wall
     buildable: True

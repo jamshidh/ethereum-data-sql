@@ -1,8 +1,22 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.TransactionReceipt(
   TransactionReceipt(..),
   PostTransactionState(..)
   ) where
+
+import Database.Persist
+import Database.Persist.Types
+import Database.Persist.TH
 
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
@@ -12,7 +26,7 @@ import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Data.RLP
 
-data PostTransactionState = PostTransactionState SHA deriving (Show)
+data PostTransactionState = PostTransactionState SHA deriving (Show, Read, Eq)
 
 instance RLPSerializable PostTransactionState where
   rlpDecode x = PostTransactionState $ rlpDecode x
@@ -23,7 +37,7 @@ data TransactionReceipt =
     theTransaction::SignedTransaction,
     postTransactionState::PostTransactionState,
     cumulativeGasUsed::Integer
-    } deriving (Show)
+    } deriving (Show, Read, Eq)
 
 
 {-

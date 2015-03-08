@@ -1,4 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.AddressState (
   AddressState(..),
@@ -9,6 +18,10 @@ module Blockchain.Data.AddressState (
   deleteAddressState,
   addressStateExists
   ) where
+
+import Database.Persist
+import Database.Persist.Types
+import Database.Persist.TH
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
@@ -29,8 +42,9 @@ import Blockchain.Util
 
 --import Debug.Trace
 
-data AddressState = AddressState { addressStateNonce::Integer, balance::Integer, contractRoot::SHAPtr, codeHash::SHA } deriving (Show)
+data AddressState = AddressState { addressStateNonce::Integer, balance::Integer, contractRoot::SHAPtr, codeHash::SHA } deriving (Show, Read, Eq)
 
+derivePersistField "AddressState"
 
 blankAddressState::AddressState
 blankAddressState = AddressState { addressStateNonce=0, balance=0, contractRoot=emptyTriePtr, codeHash=hash "" }

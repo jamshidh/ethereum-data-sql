@@ -1,8 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.Transaction (
   Transaction(..)
   ) where
+
+
+import Database.Persist
+import Database.Persist.Types
+import Database.Persist.TH
 
 import qualified Data.ByteString as B
 import Text.PrettyPrint.ANSI.Leijen
@@ -13,10 +27,10 @@ import qualified Blockchain.Colors as CL
 import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.Util
+
 --import VM
 
 --import Debug.Trace
-
 
 data Transaction =
   MessageTX {
@@ -33,7 +47,7 @@ data Transaction =
     tGasLimit::Integer,
     value::Integer,
     tInit::Code
-    } deriving (Show)
+    } deriving (Show, Read, Eq)
 
 instance Format Transaction where
   format MessageTX{tNonce=n, gasPrice=gp, tGasLimit=gl, to=to', value=v, tData=d} =
