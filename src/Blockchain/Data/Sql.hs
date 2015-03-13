@@ -33,12 +33,12 @@ import Blockchain.SHA
 --import Debug.Trace
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-BlockP
+BlockP 
     blockHash SHA
     block Block
-SignedTX
+SignedTX 
     txHash SHA
     signedTX SignedTransaction
-AddressStateP
+AddressStateP 
     addressState AddressState
 |]

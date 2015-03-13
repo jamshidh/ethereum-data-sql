@@ -67,7 +67,6 @@ library
                    Blockchain.Data.Sql
                    Blockchain.Data.Transaction
                    Blockchain.Data.TransactionReceipt
-                   Blockchain.Data.Wire
                    Blockchain.DB.CodeDB
                    Blockchain.ExtDBs
                    Blockchain.Format

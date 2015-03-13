@@ -36,13 +36,13 @@ import Blockchain.Database.MerklePatricia.SHAPtr
 
 --import Debug.Trace
 
-{-
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 BlockData
     parentHash SHA
     unclesHash SHA
     coinbase Address
-    bStateRoot SHAPtr
+    stateRoot SHAPtr
     transactionsRoot SHAPtr
     receiptsRoot SHAPtr
     logBloom B.ByteString
@@ -59,9 +59,10 @@ Block
     blockData BlockData
     receiptTransactions [SignedTransaction]
     blockUncles [BlockData]
+    deriving Show Read Eq
 |]
--}
 
+{-
 data BlockData = BlockData {
   parentHash::SHA,
   unclesHash::SHA,
@@ -84,7 +85,7 @@ data Block = Block {
   receiptTransactions::[SignedTransaction],
   blockUncles::[BlockData]
   } deriving (Show, Read, Eq)
-
-derivePersistField "BlockData"
-derivePersistField "Block"
+-}
+--derivePersistField "BlockData"
+--derivePersistField "Block"
 

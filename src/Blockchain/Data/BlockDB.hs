@@ -18,15 +18,17 @@ module Blockchain.Data.BlockDB (
   fastFindNonce,
   nonceIsValid,
   getBlock,
-  putBlock
+  putBlock,
+  putBlockSql
 ) where 
 
-import Database.Persist
+import Database.Persist hiding (get)
 import Database.Persist.Types
 import Database.Persist.TH
+import Database.Persist.Postgresql as SQL hiding (get)
 
 import qualified Crypto.Hash.SHA3 as C
-import Data.Binary
+import Data.Binary hiding (get,put)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
@@ -44,6 +46,7 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.DBM 
 import Blockchain.Data.Address
+import Blockchain.Data.Sql
 import qualified Blockchain.Colors as CL
 import qualified Blockchain.Database.MerklePatricia as MP
 import Blockchain.ExtDBs
@@ -52,8 +55,11 @@ import Blockchain.Data.RLP
 import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
-import Blockchain.Data.Block hiding (SHAPtr)
-import Blockchain.Data.AddressState hiding (SHAPtr)
+import Blockchain.Data.Block
+import Blockchain.Data.AddressState 
+
+import Control.Monad.State
+import Control.Monad.Trans.Resource
 
 
 getBlock::SHA->DBM (Maybe Block)
@@ -62,12 +68,20 @@ getBlock h =
 
 putBlock::Block->DBM ()
 putBlock b = do
+  notUsed <- putBlockSql b
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
+putBlockSql ::Block->DBM (Key BlockP)
+putBlockSql b = do
+  ctx <- get
+  runResourceT $
+    SQL.runSqlPool  (SQL.insert (Block b)) $ sqlBlockDB $ ctx 
+  
+  
 instance Format Block where
-  format b@Block{blockData=bd, receiptTransactions=receipts, blockUncles=uncles} =
-    CL.blue ("Block #" ++ show (number bd)) ++ " " ++
+  format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
+    CL.blue ("Block #" ++ show (blockDataNumber bd)) ++ " " ++
     tab (show (pretty $ blockHash b) ++ "\n" ++
          format bd ++
          (if null receipts
@@ -83,26 +97,26 @@ instance RLPSerializable Block where
   rlpDecode (RLPArray arr) = error ("rlpDecode for Block called on object with wrong amount of data, length arr = " ++ show arr)
   rlpDecode x = error ("rlpDecode for Block called on non block object: " ++ show x)
 
-  rlpEncode Block{blockData=bd, receiptTransactions=receipts, blockUncles=uncles} =
+  rlpEncode Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
     RLPArray [rlpEncode bd, RLPArray (rlpEncode <$> receipts), RLPArray $ rlpEncode <$> uncles]
 
 instance RLPSerializable BlockData where
   rlpDecode (RLPArray [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14]) =
     BlockData {
-      parentHash = rlpDecode v1,
-      unclesHash = rlpDecode v2,
-      coinbase = rlpDecode v3,
-      bStateRoot = rlpDecode v4,
-      transactionsRoot = rlpDecode v5,
-      receiptsRoot = rlpDecode v6,
-      logBloom = rlpDecode v7,
-      difficulty = rlpDecode v8,
-      number = rlpDecode v9,
-      gasLimit = rlpDecode v10,
-      gasUsed = rlpDecode v11,
-      timestamp = posixSecondsToUTCTime $ fromInteger $ rlpDecode v12,
-      extraData = rlpDecode v13,
-      nonce = rlpDecode v14
+      blockDataParentHash = rlpDecode v1,
+      blockDataUnclesHash = rlpDecode v2,
+      blockDataCoinbase = rlpDecode v3,
+      blockDataStateRoot = rlpDecode v4,
+      blockDataTransactionsRoot = rlpDecode v5,
+      blockDataReceiptsRoot = rlpDecode v6,
+      blockDataLogBloom = rlpDecode v7,
+      blockDataDifficulty = rlpDecode v8,
+      blockDataNumber = rlpDecode v9,
+      blockDataGasLimit = rlpDecode v10,
+      blockDataGasUsed = rlpDecode v11,
+      blockDataTimestamp = posixSecondsToUTCTime $ fromInteger $ rlpDecode v12,
+      blockDataExtraData = rlpDecode v13,
+      blockDataNonce = rlpDecode v14
       }  
   rlpDecode (RLPArray arr) = error ("Error in rlpDecode for Block: wrong number of items, expected 14, got " ++ show (length arr) ++ ", arr = " ++ show (pretty arr))
   rlpDecode x = error ("rlp2BlockData called on non block object: " ++ show x)
@@ -110,20 +124,20 @@ instance RLPSerializable BlockData where
 
   rlpEncode bd =
     RLPArray [
-      rlpEncode $ parentHash bd,
-      rlpEncode $ unclesHash bd,
-      rlpEncode $ coinbase bd,
-      rlpEncode $ bStateRoot bd,
-      rlpEncode $ transactionsRoot bd,
-      rlpEncode $ receiptsRoot bd,
-      rlpEncode $ logBloom bd,
-      rlpEncode $ difficulty bd,
-      rlpEncode $ number bd,
-      rlpEncode $ gasLimit bd,
-      rlpEncode $ gasUsed bd,
-      rlpEncode (round $ utcTimeToPOSIXSeconds $ timestamp bd::Integer),
-      rlpEncode $ extraData bd,
-      rlpEncode $ nonce bd
+      rlpEncode $ blockDataParentHash bd,
+      rlpEncode $ blockDataUnclesHash bd, 
+      rlpEncode $ blockDataCoinbase bd,
+      rlpEncode $ blockDataStateRoot bd,
+      rlpEncode $ blockDataTransactionsRoot bd,
+      rlpEncode $ blockDataReceiptsRoot bd,
+      rlpEncode $ blockDataLogBloom bd,
+      rlpEncode $ blockDataDifficulty bd,
+      rlpEncode $ blockDataNumber bd,
+      rlpEncode $ blockDataGasLimit bd,
+      rlpEncode $ blockDataGasUsed bd,
+      rlpEncode (round $ utcTimeToPOSIXSeconds $ blockDataTimestamp bd::Integer),
+      rlpEncode $ blockDataExtraData bd,
+      rlpEncode $ blockDataNonce bd
       ]
 
 blockHash::Block->SHA
@@ -132,19 +146,19 @@ blockHash (Block info _ _) = hash . rlpSerialize . rlpEncode $ info
 instance Format BlockData where
   format b = 
     "parentHash: " ++ show (pretty
-                            $ parentHash b) ++ "\n" ++
-    "unclesHash: " ++ show (pretty $ unclesHash b) ++ 
-    (if unclesHash b == hash (B.pack [0xc0]) then " (the empty array)\n" else "\n") ++
-    "coinbase: " ++ show (pretty $ coinbase b) ++ "\n" ++
-    "stateRoot: " ++ show (pretty $ bStateRoot b) ++ "\n" ++
-    "transactionsRoot: " ++ show (pretty $ transactionsRoot b) ++ "\n" ++
-    "receiptsRoot: " ++ show (pretty $ receiptsRoot b) ++ "\n" ++
-    "difficulty: " ++ show (difficulty b) ++ "\n" ++
-    "gasLimit: " ++ show (gasLimit b) ++ "\n" ++
-    "gasUsed: " ++ show (gasUsed b) ++ "\n" ++
-    "timestamp: " ++ show (timestamp b) ++ "\n" ++
-    "extraData: " ++ show (pretty $ extraData b) ++ "\n" ++
-    "nonce: " ++ show (pretty $ nonce b) ++ "\n"
+                            $ blockDataParentHash b) ++ "\n" ++
+    "unclesHash: " ++ show (pretty $ blockDataUnclesHash b) ++ 
+    (if blockDataUnclesHash b == hash (B.pack [0xc0]) then " (the empty array)\n" else "\n") ++
+    "coinbase: " ++ show (pretty $ blockDataCoinbase b) ++ "\n" ++
+    "stateRoot: " ++ show (pretty $ blockDataStateRoot b) ++ "\n" ++
+    "transactionsRoot: " ++ show (pretty $ blockDataTransactionsRoot b) ++ "\n" ++
+    "receiptsRoot: " ++ show (pretty $ blockDataReceiptsRoot b) ++ "\n" ++
+    "difficulty: " ++ show (blockDataDifficulty b) ++ "\n" ++
+    "gasLimit: " ++ show (blockDataGasLimit b) ++ "\n" ++
+    "gasUsed: " ++ show (blockDataGasUsed b) ++ "\n" ++
+    "timestamp: " ++ show (blockDataTimestamp b) ++ "\n" ++
+    "extraData: " ++ show (pretty $ blockDataExtraData b) ++ "\n" ++
+    "nonce: " ++ show (pretty $ blockDataNonce b) ++ "\n"
 
 
 --------------------------
@@ -154,19 +168,19 @@ instance Format BlockData where
 noncelessBlockData2RLP::BlockData->RLPObject
 noncelessBlockData2RLP bd =
   RLPArray [
-      rlpEncode $ parentHash bd,
-      rlpEncode $ unclesHash bd,
-      rlpEncode $ coinbase bd,
-      rlpEncode $ bStateRoot bd,
-      rlpEncode $ transactionsRoot bd,
-      rlpEncode $ receiptsRoot bd,
-      rlpEncode $ logBloom bd,
-      rlpEncode $ difficulty bd,
-      rlpEncode $ number bd,
-      rlpEncode $ gasLimit bd,
-      rlpEncode $ gasUsed bd,
-      rlpEncode (round $ utcTimeToPOSIXSeconds $ timestamp bd::Integer),
-      rlpEncode $ extraData bd
+      rlpEncode $ blockDataParentHash bd,
+      rlpEncode $ blockDataUnclesHash bd,
+      rlpEncode $ blockDataCoinbase bd,
+      rlpEncode $ blockDataStateRoot bd,
+      rlpEncode $ blockDataTransactionsRoot bd,
+      rlpEncode $ blockDataReceiptsRoot bd,
+      rlpEncode $ blockDataLogBloom bd,
+      rlpEncode $ blockDataDifficulty bd,
+      rlpEncode $ blockDataNumber bd,
+      rlpEncode $ blockDataGasLimit bd,
+      rlpEncode $ blockDataGasUsed bd,
+      rlpEncode (round $ utcTimeToPOSIXSeconds $ blockDataTimestamp bd::Integer),
+      rlpEncode $ blockDataExtraData bd
       ]
 
 {-
@@ -180,7 +194,7 @@ sha2ByteString::SHA->B.ByteString
 sha2ByteString (SHA val) = BL.toStrict $ encode val
 
 headerHashWithoutNonce::Block->ByteString
-headerHashWithoutNonce b = C.hash 256 $ rlpSerialize $ noncelessBlockData2RLP $ blockData b
+headerHashWithoutNonce b = C.hash 256 $ rlpSerialize $ noncelessBlockData2RLP $ blockBlockData b
 
 powFunc::Block->Integer
 powFunc b =
@@ -189,15 +203,15 @@ powFunc b =
   C.hash 256 (
     headerHashWithoutNonce b
     `B.append`
-    sha2ByteString (nonce $ blockData b))
+    sha2ByteString (blockDataNonce $ blockBlockData b))
 
 nonceIsValid::Block->Bool
-nonceIsValid b = powFunc b * difficulty (blockData b) < (2::Integer)^(256::Integer)
+nonceIsValid b = powFunc b * blockDataDifficulty (blockBlockData b) < (2::Integer)^(256::Integer)
 
 addNonceToBlock::Block->Integer->Block
 addNonceToBlock b n =
   b {
-    blockData=(blockData b) {nonce=SHA $ fromInteger n}
+    blockBlockData=(blockBlockData b) {blockDataNonce=SHA $ fromInteger n}
     }
 
 findNonce::Block->Integer
@@ -219,7 +233,7 @@ fastFindNonce b = do
   return $ byteString2Integer $ B.pack retData
   where
     threshold::B.ByteString
-    threshold = fst $ B16.decode $ BC.pack $ padZeros 64 $ showHex ((2::Integer)^(256::Integer) `quot` difficulty (blockData b)) ""
+    threshold = fst $ B16.decode $ BC.pack $ padZeros 64 $ showHex ((2::Integer)^(256::Integer) `quot` blockDataDifficulty (blockBlockData b)) ""
 
 foreign import ccall "findNonce" c_fastFindNonce::Ptr Word8->Ptr Word8->Ptr Word8->IO Int
 --foreign import ccall "fastFindNonce" c_fastFindNonce::ForeignPtr Word8->ForeignPtr Word8->ForeignPtr Word8
