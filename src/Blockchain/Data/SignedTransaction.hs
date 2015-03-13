@@ -11,6 +11,7 @@
 
 module Blockchain.Data.SignedTransaction (
   SignedTransaction(..),
+  txHash
   ) where
 
 import Database.Persist
@@ -27,6 +28,7 @@ import Blockchain.Data.Transaction
 import Blockchain.Util
 import Blockchain.Data.Address
 import Blockchain.Data.Code
+import Blockchain.SHA
 
 --import Debug.Trace
 
@@ -55,6 +57,9 @@ data SignedTransaction =
     } deriving (Show, Read, Eq)
 
 derivePersistField "SignedTransaction"
+
+txHash :: SignedTransaction -> SHA
+txHash =  hash . rlpSerialize . rlpEncode 
 
 instance Format SignedTransaction where
   format SignedTransaction{unsignedTransaction = x, v=v', r=r', s=s'} =

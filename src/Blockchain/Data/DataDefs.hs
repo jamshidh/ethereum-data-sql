@@ -9,9 +9,12 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 
-module Blockchain.Data.Block (
+module Blockchain.Data.DataDefs (
   BlockData (..),
   Block (..),
+  BlockRef (..),
+  AddressState (..),
+  SignedTX (..),
   migrateAll
   ) where
 
@@ -24,7 +27,6 @@ import Data.Time
 import Data.Time.Clock.POSIX
 import Data.ByteString as B
 
-import Blockchain.Data.AddressState
 import Blockchain.Data.Address
 import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
@@ -37,7 +39,7 @@ import Blockchain.Database.MerklePatricia.SHAPtr
 --import Debug.Trace
 
 
-{-
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 BlockData
     parentHash SHA
@@ -61,33 +63,21 @@ Block
     receiptTransactions [SignedTransaction]
     blockUncles [BlockData]
     deriving Show Read Eq
+
+BlockRef
+    hash SHA
+    block Block
+    deriving Show Read Eq
+
+AddressState
+    nonce Integer
+    balance Integer
+    contractRoot SHAPtr
+    codeHash SHA
+    deriving Show Read Eq
+
+SignedTX
+    hash SHA
+    transaction SignedTransaction
+    deriving Show Read Eq
 |]
-
-{-
-data BlockData = BlockData {
-  parentHash::SHA,
-  unclesHash::SHA,
-  coinbase::Address,
-  bStateRoot::SHAPtr,
-  transactionsRoot::SHAPtr,
-  receiptsRoot::SHAPtr,
-  logBloom::B.ByteString,
-  difficulty::Integer,
-  number::Integer,
-  gasLimit::Integer,
-  gasUsed::Integer,
-  timestamp::UTCTime,
-  extraData::Integer,
-  nonce::SHA
-} deriving (Show, Read, Eq)
-
-data Block = Block {
-  blockData::BlockData,
-  receiptTransactions::[SignedTransaction],
-  blockUncles::[BlockData]
-  } deriving (Show, Read, Eq)
--}
---derivePersistField "BlockData"
---derivePersistField "Block"
-
--}

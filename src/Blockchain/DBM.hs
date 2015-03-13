@@ -34,15 +34,14 @@ import           Control.Monad.Logger    (runStderrLoggingT)
 import qualified Database.Persist            as P
 import qualified Database.Persist.Postgresql as SQL
 import           Database.Persist.TH
+import           Database.Persist.Types
 
 import Blockchain.Constants
 import Blockchain.Database.MerklePatricia
 import Blockchain.Data.Transaction
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
-import Blockchain.Data.Address
-import Blockchain.Data.Block
-import Blockchain.Data.Sql
+import Blockchain.Data.DataDefs
 import Blockchain.Data.Code
 import Blockchain.SHA
 
@@ -67,7 +66,7 @@ data DBs =
 
 type DBM = StateT DBs IO
 
-connStr = "host=localhost dbname=test user=kjameslubin password=test port=5432"
+connStr = "host=localhost dbname=eth user=kjameslubin password=test port=5432"
 
 setStateRoot::SHAPtr->DBM ()
 setStateRoot stateRoot' = do

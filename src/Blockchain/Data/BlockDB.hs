@@ -46,7 +46,6 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.DBM 
 import Blockchain.Data.Address
-import Blockchain.Data.Sql
 import qualified Blockchain.Colors as CL
 import qualified Blockchain.Database.MerklePatricia as MP
 import Blockchain.ExtDBs
@@ -55,8 +54,7 @@ import Blockchain.Data.RLP
 import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
-import Blockchain.Data.Block
-import Blockchain.Data.AddressState 
+import Blockchain.Data.DataDefs
 
 import Control.Monad.State
 import Control.Monad.Trans.Resource
@@ -72,12 +70,16 @@ putBlock b = do
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
-putBlockSql ::Block->DBM (Key BlockP)
+putBlockSql ::Block->DBM (Key Block)
 putBlockSql b = do
   ctx <- get
   runResourceT $
-    SQL.runSqlPool  (SQL.insert (Block b)) $ sqlBlockDB $ ctx 
-  
+    SQL.runSqlPool actions $ sqlBlockDB $ ctx 
+  where actions = do
+          (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx})  (blockReceiptTransactions b)))
+          SQL.insert $ (blockBlockData b)
+          SQL.insert $ (BlockRef (blockHash b) b)
+          SQL.insert $ b
   
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =

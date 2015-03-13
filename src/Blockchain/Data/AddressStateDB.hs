@@ -33,9 +33,8 @@ import Blockchain.Data.RLP
 import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
-import Blockchain.Data.Block
 import Blockchain.Data.BlockDB
-import Blockchain.Data.AddressState
+import Blockchain.Data.DataDefs
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
@@ -49,46 +48,37 @@ import qualified Data.NibbleString as N
 
 
 blankAddressState::AddressState
-blankAddressState = AddressState { addressStateNonce=0, balance=0, contractRoot=emptyTriePtr, codeHash=hash "" }
+blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=emptyTriePtr, addressStateCodeHash=hash "" }
 
 
 instance Format AddressState where
   format a = CL.blue "AddressState" ++
              tab("\nnonce: " ++ showHex (addressStateNonce a) "" ++
-                 "\nbalance: " ++ show (toInteger $ balance a) ++
-                 "\ncontractRoot: " ++ show (pretty $ contractRoot a) ++
-                 "\ncodeHash: " ++ show (pretty $ codeHash a))
+                 "\nbalance: " ++ show (toInteger $ addressStateBalance a) ++ 
+                 "\ncontractRoot: " ++ show (pretty $ addressStateContractRoot a) ++
+                 "\ncodeHash: " ++ show (pretty $ addressStateCodeHash a))
   
 instance RLPSerializable AddressState where
   --rlpEncode a | balance a < 0 = rlpEncode a{balance = - balance a}
-  rlpEncode a | balance a < 0 = error $ "Error in cal to rlpEncode for AddressState: AddressState has negative balance: " ++ format a
+  rlpEncode a | addressStateBalance a < 0 = error $ "Error in cal to rlpEncode for AddressState: AddressState has negative balance: " ++ format a
   rlpEncode a = RLPArray [
     rlpEncode $ toInteger $ addressStateNonce a,
-    rlpEncode $ toInteger $ balance a,
-    rlpEncode $ contractRoot a,
-    rlpEncode $ codeHash a
+    rlpEncode $ toInteger $ addressStateBalance a,
+    rlpEncode $ addressStateContractRoot a,
+    rlpEncode $ addressStateCodeHash a
                 ]
 
   rlpDecode (RLPArray [n, b, cr, ch]) =
     AddressState {
       addressStateNonce=fromInteger $ rlpDecode n,
-      balance=fromInteger $ rlpDecode b,
-      contractRoot=rlpDecode cr,
-      codeHash=rlpDecode ch
+      addressStateBalance=fromInteger $ rlpDecode b,
+      addressStateContractRoot=rlpDecode cr,
+      addressStateCodeHash=rlpDecode ch
       } 
   rlpDecode x = error $ "Missing case in rlpDecode for AddressState: " ++ show (pretty x)
 
 addressAsNibbleString::Address->N.NibbleString
 addressAsNibbleString (Address s) = N.EvenNibbleString $ BL.toStrict $ encode s
-
-getBlock::SHA->DBM (Maybe Block)
-getBlock h = 
-  fmap (rlpDecode . rlpDeserialize) <$> blockDBGet (BL.toStrict $ encode h)
-
-putBlock::Block->DBM ()
-putBlock b = do
-  let bytes = rlpSerialize $ rlpEncode b
-  blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
 getAddressState::Address->DBM AddressState
 getAddressState address = do
