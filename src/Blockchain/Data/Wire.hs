@@ -13,6 +13,7 @@ import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import qualified Blockchain.Colors as CL
+import Blockchain.Data.BlockDB
 import Blockchain.Data.Block
 import Blockchain.Data.Peer
 import Blockchain.Data.RLP

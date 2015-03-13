@@ -51,6 +51,8 @@ library
                  , persistent
                  , persistent-template
                  , persistent-postgresql
+                 , monad-logger
+
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
@@ -72,6 +74,8 @@ library
                    Blockchain.ExtWord
                    Blockchain.SHA
                    Blockchain.Util
+                   Blockchain.Data.BlockDB
+                   Blockchain.Data.AddressStateDB
     
 
     C-sources: fastNonceFinder/nonceFinder.c
