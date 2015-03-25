@@ -13,10 +13,7 @@ module Blockchain.ExtDBs (
   putKeyVal,
   getKeyVals,
   keyExists,
-  deleteKey,
-  deleteStorageKey,
-  putStorageKeyVal,
-  getStorageKeyVals
+  deleteKey
   ) where
 
 import Control.Monad.State
@@ -114,28 +111,3 @@ keyExists::N.NibbleString->DBM Bool
 keyExists key = do
   ctx <- get
   liftIO $ runResourceT $ MP.keyExists (stateDB ctx) key
-
-deleteStorageKey::N.NibbleString->DBM ()
-deleteStorageKey key = do
-  ctx <- get
-  newStorageDB <-
-    liftIO $ runResourceT $ MP.deleteKey (storageDB ctx) key
-  put ctx{storageDB=newStorageDB}
-
-putStorageKeyVal::Word256->Word256->DBM ()
-putStorageKeyVal key val = do
-  ctx <- get
-  newStorageDB <-
-    liftIO $ runResourceT $
-         MP.putKeyVal (storageDB ctx)
-             (N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key)
-             (rlpEncode $ rlpSerialize $ rlpEncode $ toInteger val)
-
-    
-  --liftIO $ putStrLn $ "storage state root is " ++ show (pretty $ MP.stateRoot newStorageDB)
-  put ctx{storageDB=newStorageDB}
-
-getStorageKeyVals::N.NibbleString->DBM [(N.NibbleString, RLPObject)]
-getStorageKeyVals key = do
-  ctx <- get
-  liftIO $ runResourceT $ MP.getKeyVals (storageDB ctx) key
