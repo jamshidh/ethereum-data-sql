@@ -1,0 +1,39 @@
+BlockData
+    parentHash SHA
+    unclesHash SHA
+    coinbase Address
+    stateRoot SHAPtr
+    transactionsRoot SHAPtr
+    receiptsRoot SHAPtr
+    logBloom B.ByteString
+    difficulty Integer
+    number Integer
+    gasLimit Integer
+    gasUsed Integer
+    timestamp UTCTime
+    extraData Integer
+    nonce SHA
+    deriving Show Read Eq
+
+Block
+    blockData BlockData
+    receiptTransactions [SignedTransaction]
+    blockUncles [BlockData]
+    deriving Show Read Eq
+
+BlockRef
+    hash SHA
+    block Block
+    deriving Show Read Eq
+
+AddressState
+    nonce Integer
+    balance Integer
+    contractRoot SHAPtr
+    codeHash SHA
+    deriving Show Read Eq
+
+SignedTX
+    hash SHA
+    transaction SignedTransaction
+    deriving Show Read Eq

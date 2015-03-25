@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, ForeignFunctionInterface #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances           #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
@@ -15,14 +16,20 @@ module Blockchain.Data.DataDefs (
   BlockRef (..),
   AddressState (..),
   SignedTX (..),
-  migrateAll
+  SHA (..),
+  Address (..),
+  SHAPtr (..),
+  entityDefs,
+  migrateAll 
   ) where
 
 import Database.Persist
 import Database.Persist.Types
 import Database.Persist.TH
 import Database.Persist.Postgresql
-
+import Database.Persist.Quasi
+ 
+--import Database.Persist.EntityDef
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.ByteString as B
@@ -32,52 +39,16 @@ import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
 
-import Blockchain.Database.MerklePatricia.SHAPtr
+import Blockchain.Database.MerklePatricia
 
 
 
 --import Debug.Trace
 
+entityDefs :: [EntityDef]
+entityDefs = $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
+  
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] 
+    $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
 
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-BlockData
-    parentHash SHA
-    unclesHash SHA
-    coinbase Address
-    stateRoot SHAPtr
-    transactionsRoot SHAPtr
-    receiptsRoot SHAPtr
-    logBloom B.ByteString
-    difficulty Integer
-    number Integer
-    gasLimit Integer
-    gasUsed Integer
-    timestamp UTCTime
-    extraData Integer
-    nonce SHA
-    deriving Show Read Eq
-
-Block
-    blockData BlockData
-    receiptTransactions [SignedTransaction]
-    blockUncles [BlockData]
-    deriving Show Read Eq
-
-BlockRef
-    hash SHA
-    block Block
-    deriving Show Read Eq
-
-AddressState
-    nonce Integer
-    balance Integer
-    contractRoot SHAPtr
-    codeHash SHA
-    deriving Show Read Eq
-
-SignedTX
-    hash SHA
-    transaction SignedTransaction
-    deriving Show Read Eq
-|]

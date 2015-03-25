@@ -1,0 +1,36 @@
+Configuring leveldb-haskell-0.3.1...
+Building leveldb-haskell-0.3.1...
+Preprocessing library leveldb-haskell-0.3.1...
+[1 of 7] Compiling Database.LevelDB.C ( dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/C.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/C.o )
+[2 of 7] Compiling Database.LevelDB.Types ( src/Database/LevelDB/Types.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/Types.o )
+[3 of 7] Compiling Database.LevelDB.Internal ( src/Database/LevelDB/Internal.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/Internal.o )
+[4 of 7] Compiling Database.LevelDB.Iterator ( src/Database/LevelDB/Iterator.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/Iterator.o )
+[5 of 7] Compiling Database.LevelDB.Base ( src/Database/LevelDB/Base.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/Base.o )
+[6 of 7] Compiling Database.LevelDB.MonadResource ( src/Database/LevelDB/MonadResource.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB/MonadResource.o )
+
+src/Database/LevelDB/MonadResource.hs:258:11: Warning:
+    In the use of ‘Base.mapIter’
+    (imported from Database.LevelDB.Base, but defined in Database.LevelDB.Iterator):
+    Deprecated: "will be removed in the next release"
+
+src/Database/LevelDB/MonadResource.hs:266:13: Warning:
+    In the use of ‘Base.iterItems’
+    (imported from Database.LevelDB.Base, but defined in Database.LevelDB.Iterator):
+    Deprecated: "will be removed in the next release"
+
+src/Database/LevelDB/MonadResource.hs:274:12: Warning:
+    In the use of ‘Base.iterKeys’
+    (imported from Database.LevelDB.Base, but defined in Database.LevelDB.Iterator):
+    Deprecated: "will be removed in the next release"
+
+src/Database/LevelDB/MonadResource.hs:282:14: Warning:
+    In the use of ‘Base.iterValues’
+    (imported from Database.LevelDB.Base, but defined in Database.LevelDB.Iterator):
+    Deprecated: "will be removed in the next release"
+[7 of 7] Compiling Database.LevelDB ( src/Database/LevelDB.hs, dist/dist-sandbox-38dfe3f3/build/Database/LevelDB.o )
+In-place registering leveldb-haskell-0.3.1...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-leveldb-haskell-0.354496.1
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/leveldb-haskell-0.3.1
+Registering leveldb-haskell-0.3.1...

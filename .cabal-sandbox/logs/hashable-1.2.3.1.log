@@ -1,0 +1,23 @@
+Configuring hashable-1.2.3.1...
+Building hashable-1.2.3.1...
+Preprocessing library hashable-1.2.3.1...
+[1 of 3] Compiling Data.Hashable.Class ( Data/Hashable/Class.hs, dist/dist-sandbox-38dfe3f3/build/Data/Hashable/Class.o )
+
+Data/Hashable/Class.hs:211:11: Warning:
+    In the use of ‘bitSize’ (imported from Data.Bits):
+    Deprecated: "Use 'bitSizeMaybe' or 'finiteBitSize' instead"
+
+Data/Hashable/Class.hs:234:11: Warning:
+    In the use of ‘bitSize’ (imported from Data.Bits):
+    Deprecated: "Use 'bitSizeMaybe' or 'finiteBitSize' instead"
+[2 of 3] Compiling Data.Hashable.Generic ( Data/Hashable/Generic.hs, dist/dist-sandbox-38dfe3f3/build/Data/Hashable/Generic.o )
+
+Data/Hashable/Generic.hs:20:1: Warning:
+    The import of ‘Bits’ from module ‘Data.Bits’ is redundant
+[3 of 3] Compiling Data.Hashable    ( Data/Hashable.hs, dist/dist-sandbox-38dfe3f3/build/Data/Hashable.o )
+In-place registering hashable-1.2.3.1...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-hashable-1.2.354496.1
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/hashable-1.2.3.1
+Registering hashable-1.2.3.1...

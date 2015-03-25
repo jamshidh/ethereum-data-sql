@@ -1,0 +1,40 @@
+Configuring AES-0.2.9...
+Building AES-0.2.9...
+Preprocessing library AES-0.2.9...
+[1 of 5] Compiling Codec.Crypto.AES.IO ( dist/dist-sandbox-38dfe3f3/build/Codec/Crypto/AES/IO.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Crypto/AES/IO.o )
+
+Codec/Crypto/AES/IO.hsc:155:10: Warning:
+    No explicit implementation for
+      (either ‘peek’
+              or
+              ‘peekElemOff’
+              or
+              ‘peekByteOff’) and (either ‘poke’
+                                         or
+                                         ‘pokeElemOff’
+                                         or
+                                         ‘pokeByteOff’)
+    In the instance declaration for ‘Storable EncryptCtxStruct’
+
+Codec/Crypto/AES/IO.hsc:160:10: Warning:
+    No explicit implementation for
+      (either ‘peek’
+              or
+              ‘peekElemOff’
+              or
+              ‘peekByteOff’) and (either ‘poke’
+                                         or
+                                         ‘pokeElemOff’
+                                         or
+                                         ‘pokeByteOff’)
+    In the instance declaration for ‘Storable DecryptCtxStruct’
+[2 of 5] Compiling Codec.Crypto.AES.Random ( Codec/Crypto/AES/Random.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Crypto/AES/Random.o )
+[3 of 5] Compiling Control.Monad.UnsafeIO ( Control/Monad/UnsafeIO.hs, dist/dist-sandbox-38dfe3f3/build/Control/Monad/UnsafeIO.o )
+[4 of 5] Compiling Codec.Crypto.AES.Monad ( Codec/Crypto/AES/Monad.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Crypto/AES/Monad.o )
+[5 of 5] Compiling Codec.Crypto.AES ( Codec/Crypto/AES.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Crypto/AES.o )
+In-place registering AES-0.2.9...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-AES-0.254496.9
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/AES-0.2.9
+Registering AES-0.2.9...

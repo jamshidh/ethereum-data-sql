@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances           #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
@@ -14,11 +15,19 @@ module Blockchain.Data.SignedTransaction (
   txHash
   ) where
 
+import Data.Aeson
+
 import Database.Persist
 import Database.Persist.Types
 import Database.Persist.TH
 
-import Data.Binary
+import qualified Data.Binary as BN
+
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BLC
+
+
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import qualified Blockchain.Colors as CL
@@ -51,7 +60,7 @@ data SignedTX =
 data SignedTransaction =
   SignedTransaction {
       unsignedTransaction::Transaction,
-      v::Word8,
+      v::BN.Word8,
       r::Integer,
       s::Integer
     } deriving (Show, Read, Eq)
@@ -90,6 +99,47 @@ instance RLPSerializable SignedTransaction where
         ]
       where
         (RLPArray [n, gp, gl, toAddr, val, i]) = rlpEncode (unsignedTransaction t)
+
+{-
+instance ToJSON SignedTransaction where
+  toJSON (SignedTransaction (ContractCreationTX tn gp gl val tinit)  v r s) =
+    object [ "tNonce" .= tn,
+             "gasPrice" .= gp,
+             "gasLimit" .= gl,
+             "value" .= val,
+             "init" .= tinit,
+             "v" .= (toInteger $ v),
+             "r" .= r,
+             "s" .= s ]
+  toJSON (SignedTransaction (MessageTX tn gp gl to' val tdata)  v r s) =
+    object [ "tNonce" .= tn,
+             "gasPrice" .= gp,
+             "gasLimit" .= gl,
+             "to" .= to',
+             "value" .= val,
+             "data" .= tdata,
+             "v" .= (toInteger $ v),
+             "r" .= r,
+             "s" .= s ]
+
+ 
+instance FromJSON SignedTransaction where
+  parseJSON j = do
+             tmp <- parseJSON j
+             tn <- tmp .: "tNonce"
+             gp <- tmp .: "gasPrice"
+             gl <- tmp .: "gasLimit"
+             val <- tmp .: "value"
+             v' <- tmp .: "v"
+             r' <- tmp .: "r"
+             s' <- tmp .: "s"
+             
+             case (tmp .:? "to") of
+                    Nothing ->
+                         return $ SignedTransaction (ContractCreationTX tn gp gl val (tmp .: "init")) v' r' s'  
+                    (Just t) ->
+                         return $ SignedTransaction (MessageTX tn gp gl (tmp .: "to") val (tmp .: "data")) v' r' s'    
+-}
 
 {-
 instance Format SignedTX where

@@ -1,0 +1,74 @@
+Configuring postgresql-simple-0.4.10.0...
+Building postgresql-simple-0.4.10.0...
+Preprocessing library postgresql-simple-0.4.10.0...
+[ 1 of 32] Compiling Database.PostgreSQL.Simple.TypeInfo.Types ( src/Database/PostgreSQL/Simple/TypeInfo/Types.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/TypeInfo/Types.o )
+[ 2 of 32] Compiling Database.PostgreSQL.Simple.Time.Implementation ( src/Database/PostgreSQL/Simple/Time/Implementation.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Time/Implementation.o )
+[ 3 of 32] Compiling Database.PostgreSQL.Simple.Time.Internal ( src/Database/PostgreSQL/Simple/Time/Internal.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Time/Internal.o )
+[ 4 of 32] Compiling Database.PostgreSQL.Simple.SqlQQ ( src/Database/PostgreSQL/Simple/SqlQQ.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/SqlQQ.o )
+[ 5 of 32] Compiling Database.PostgreSQL.Simple.Time ( src/Database/PostgreSQL/Simple/Time.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Time.o )
+[ 6 of 32] Compiling Database.PostgreSQL.Simple.TypeInfo.Static ( src/Database/PostgreSQL/Simple/TypeInfo/Static.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/TypeInfo/Static.o )
+[ 7 of 32] Compiling Database.PostgreSQL.Simple.BuiltinTypes ( src/Database/PostgreSQL/Simple/BuiltinTypes.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/BuiltinTypes.o )
+[ 8 of 32] Compiling Database.PostgreSQL.Simple.Arrays ( src/Database/PostgreSQL/Simple/Arrays.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Arrays.o )
+[ 9 of 32] Compiling Database.PostgreSQL.Simple.Types ( src/Database/PostgreSQL/Simple/Types.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Types.o )
+[10 of 32] Compiling Database.PostgreSQL.Simple.TypeInfo.Macro ( src/Database/PostgreSQL/Simple/TypeInfo/Macro.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/TypeInfo/Macro.o )
+[11 of 32] Compiling Database.PostgreSQL.Simple.ToField[boot] ( src/Database/PostgreSQL/Simple/ToField.hs-boot, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/ToField.o-boot )
+[12 of 32] Compiling Database.PostgreSQL.Simple.ToRow[boot] ( src/Database/PostgreSQL/Simple/ToRow.hs-boot, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/ToRow.o-boot )
+[13 of 32] Compiling Database.PostgreSQL.Simple.ToField ( src/Database/PostgreSQL/Simple/ToField.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/ToField.o )
+[14 of 32] Compiling Database.PostgreSQL.Simple.ToRow ( src/Database/PostgreSQL/Simple/ToRow.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/ToRow.o )
+[15 of 32] Compiling Database.PostgreSQL.Simple.Ok ( src/Database/PostgreSQL/Simple/Ok.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Ok.o )
+[16 of 32] Compiling Database.PostgreSQL.Simple.Internal ( src/Database/PostgreSQL/Simple/Internal.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Internal.o )
+[17 of 32] Compiling Database.PostgreSQL.Simple.LargeObjects ( src/Database/PostgreSQL/Simple/LargeObjects.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/LargeObjects.o )
+[18 of 32] Compiling Database.PostgreSQL.Simple.Notification ( src/Database/PostgreSQL/Simple/Notification.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Notification.o )
+[19 of 32] Compiling Database.PostgreSQL.Simple.Errors ( src/Database/PostgreSQL/Simple/Errors.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Errors.o )
+[20 of 32] Compiling Database.PostgreSQL.Simple.FromField[boot] ( src/Database/PostgreSQL/Simple/FromField.hs-boot, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/FromField.o-boot )
+[21 of 32] Compiling Database.PostgreSQL.Simple.FromRow[boot] ( src/Database/PostgreSQL/Simple/FromRow.hs-boot, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/FromRow.o-boot )
+[22 of 32] Compiling Database.PostgreSQL.Simple.Compat ( src/Database/PostgreSQL/Simple/Compat.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Compat.o )
+[23 of 32] Compiling Database.PostgreSQL.Simple.Transaction ( src/Database/PostgreSQL/Simple/Transaction.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Transaction.o )
+[24 of 32] Compiling Database.PostgreSQL.Simple[boot] ( src/Database/PostgreSQL/Simple.hs-boot, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple.o-boot )
+[25 of 32] Compiling Database.PostgreSQL.Simple.TypeInfo ( src/Database/PostgreSQL/Simple/TypeInfo.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/TypeInfo.o )
+[26 of 32] Compiling Database.PostgreSQL.Simple.FromField ( src/Database/PostgreSQL/Simple/FromField.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/FromField.o )
+Loading package ghc-prim ... linking ... done.
+Loading package integer-gmp ... linking ... done.
+Loading package base ... linking ... done.
+Loading package array-0.5.0.0 ... linking ... done.
+Loading package deepseq-1.3.0.2 ... linking ... done.
+Loading package bytestring-0.10.4.0 ... linking ... done.
+Loading package containers-0.5.5.1 ... linking ... done.
+Loading package binary-0.7.1.0 ... linking ... done.
+Loading package byteable-0.1.1 ... linking ... done.
+Loading package cryptohash-0.11.6 ... linking ... done.
+Loading package text-1.1.1.3 ... linking ... done.
+Loading package hashable-1.2.3.1 ... linking ... done.
+Loading package network-info-0.2.0.5 ... linking ... done.
+Loading package old-locale-1.0.0.6 ... linking ... done.
+Loading package time-1.4.2 ... linking ... done.
+Loading package random-1.1 ... linking ... done.
+Loading package uuid-1.3.8 ... linking ... done.
+Loading package postgresql-libpq-0.9.0.2 ... linking ... done.
+Loading package case-insensitive-1.2.0.4 ... linking ... done.
+Loading package blaze-builder-0.4.0.1 ... linking ... done.
+Loading package primitive-0.5.4.0 ... linking ... done.
+Loading package vector-0.10.12.2 ... linking ... done.
+Loading package blaze-textual-0.2.0.9 ... linking ... done.
+Loading package scientific-0.3.3.7 ... linking ... done.
+Loading package attoparsec-0.12.1.3 ... linking ... done.
+Loading package dlist-0.7.1 ... linking ... done.
+Loading package transformers-0.4.3.0 ... linking ... done.
+Loading package mtl-2.2.1 ... linking ... done.
+Loading package syb-0.4.4 ... linking ... done.
+Loading package pretty-1.1.1.1 ... linking ... done.
+Loading package template-haskell ... linking ... done.
+Loading package unordered-containers-0.2.5.1 ... linking ... done.
+Loading package aeson-0.8.0.2 ... linking ... done.
+[27 of 32] Compiling Database.PostgreSQL.Simple.HStore.Implementation ( src/Database/PostgreSQL/Simple/HStore/Implementation.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/HStore/Implementation.o )
+[28 of 32] Compiling Database.PostgreSQL.Simple.HStore ( src/Database/PostgreSQL/Simple/HStore.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/HStore.o )
+[29 of 32] Compiling Database.PostgreSQL.Simple.HStore.Internal ( src/Database/PostgreSQL/Simple/HStore/Internal.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/HStore/Internal.o )
+[30 of 32] Compiling Database.PostgreSQL.Simple.FromRow ( src/Database/PostgreSQL/Simple/FromRow.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/FromRow.o )
+[31 of 32] Compiling Database.PostgreSQL.Simple ( src/Database/PostgreSQL/Simple.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple.o )
+[32 of 32] Compiling Database.PostgreSQL.Simple.Copy ( src/Database/PostgreSQL/Simple/Copy.hs, dist/dist-sandbox-38dfe3f3/build/Database/PostgreSQL/Simple/Copy.o )
+In-place registering postgresql-simple-0.4.10.0...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-postgresql-simple-0.4.1054496.0
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/postgresql-simple-0.4.10.0
+Registering postgresql-simple-0.4.10.0...

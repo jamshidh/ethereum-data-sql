@@ -1,0 +1,151 @@
+Configuring conduit-extra-1.1.7.0...
+Building conduit-extra-1.1.7.0...
+Preprocessing library conduit-extra-1.1.7.0...
+[ 1 of 12] Compiling Data.Conduit.Zlib ( Data/Conduit/Zlib.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Zlib.o )
+[ 2 of 12] Compiling Data.Conduit.Text ( Data/Conduit/Text.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Text.o )
+
+Data/Conduit/Text.hs:40:1: Warning:
+    The qualified import of ‘Prelude’ is redundant
+      except perhaps to import instances from ‘Prelude’
+    To import instances alone, use: import Prelude()
+
+Data/Conduit/Text.hs:63:7: Warning:
+    Defined but not used: ‘codecName’
+
+Data/Conduit/Text.hs:152:21: Warning: Defined but not used: ‘name’
+[ 3 of 12] Compiling Data.Conduit.Network.UDP ( Data/Conduit/Network/UDP.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Network/UDP.o )
+
+Data/Conduit/Network/UDP.hs:16:1: Warning:
+    The import of ‘SockAddr, AddrInfo’
+    from module ‘Network.Socket’ is redundant
+
+Data/Conduit/Network/UDP.hs:17:1: Warning:
+    The qualified import of ‘Network.Socket’ is redundant
+      except perhaps to import instances from ‘Network.Socket’
+    To import instances alone, use: import Network.Socket()
+[ 4 of 12] Compiling Data.Conduit.Network ( Data/Conduit/Network.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Network.o )
+
+Data/Conduit/Network.hs:41:1: Warning:
+    Module ‘Prelude’ does not export ‘catch’
+
+Data/Conduit/Network.hs:43:1: Warning:
+    The qualified import of ‘Network.Socket’ is redundant
+      except perhaps to import instances from ‘Network.Socket’
+    To import instances alone, use: import Network.Socket()
+
+Data/Conduit/Network.hs:45:1: Warning:
+    The import of ‘recv’
+    from module ‘Network.Socket.ByteString’ is redundant
+
+Data/Conduit/Network.hs:49:1: Warning:
+    The qualified import of ‘Data.ByteString.Char8’ is redundant
+      except perhaps to import instances from ‘Data.ByteString.Char8’
+    To import instances alone, use: import Data.ByteString.Char8()
+
+Data/Conduit/Network.hs:51:1: Warning:
+    The import of ‘Control.Exception’ is redundant
+      except perhaps to import instances from ‘Control.Exception’
+    To import instances alone, use: import Control.Exception()
+
+Data/Conduit/Network.hs:84:1: Warning:
+    Top-level binding with no type signature:
+      serverSettings :: Int -> SN.HostPreference -> SN.ServerSettings
+
+Data/Conduit/Network.hs:85:1: Warning:
+    Top-level binding with no type signature:
+      clientSettings :: Int -> ByteString -> SN.ClientSettings
+[ 5 of 12] Compiling Data.Conduit.Network.Unix ( Data/Conduit/Network/Unix.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Network/Unix.o )
+
+Data/Conduit/Network/Unix.hs:29:1: Warning:
+    The import of ‘Data.Conduit’ is redundant
+      except perhaps to import instances from ‘Data.Conduit’
+    To import instances alone, use: import Data.Conduit()
+
+Data/Conduit/Network/Unix.hs:30:1: Warning:
+    The import of ‘Network.Socket’ is redundant
+      except perhaps to import instances from ‘Network.Socket’
+    To import instances alone, use: import Network.Socket()
+
+Data/Conduit/Network/Unix.hs:31:1: Warning:
+    The qualified import of ‘Network.Socket’ is redundant
+      except perhaps to import instances from ‘Network.Socket’
+    To import instances alone, use: import Network.Socket()
+
+Data/Conduit/Network/Unix.hs:34:1: Warning:
+    The import of ‘Control.Monad.IO.Class’ is redundant
+      except perhaps to import instances from ‘Control.Monad.IO.Class’
+    To import instances alone, use: import Control.Monad.IO.Class()
+
+Data/Conduit/Network/Unix.hs:35:1: Warning:
+    The import of ‘Control.Exception’ is redundant
+      except perhaps to import instances from ‘Control.Exception’
+    To import instances alone, use: import Control.Exception()
+
+Data/Conduit/Network/Unix.hs:37:1: Warning:
+    The import of ‘Control.Monad’ is redundant
+      except perhaps to import instances from ‘Control.Monad’
+    To import instances alone, use: import Control.Monad()
+
+Data/Conduit/Network/Unix.hs:38:1: Warning:
+    The import of ‘Control.Monad.Trans.Control’ is redundant
+      except perhaps to import instances from ‘Control.Monad.Trans.Control’
+    To import instances alone, use: import Control.Monad.Trans.Control()
+
+Data/Conduit/Network/Unix.hs:39:1: Warning:
+    The import of ‘Control.Concurrent’ is redundant
+      except perhaps to import instances from ‘Control.Concurrent’
+    To import instances alone, use: import Control.Concurrent()
+
+Data/Conduit/Network/Unix.hs:40:1: Warning:
+    The import of ‘System.Directory’ is redundant
+      except perhaps to import instances from ‘System.Directory’
+    To import instances alone, use: import System.Directory()
+
+Data/Conduit/Network/Unix.hs:41:1: Warning:
+    The import of ‘System.IO.Error’ is redundant
+      except perhaps to import instances from ‘System.IO.Error’
+    To import instances alone, use: import System.IO.Error()
+
+Data/Conduit/Network/Unix.hs:42:1: Warning:
+    The import of ‘Control.Monad.Trans.Resource’ is redundant
+      except perhaps to import instances from ‘Control.Monad.Trans.Resource’
+    To import instances alone, use: import Control.Monad.Trans.Resource()
+
+Data/Conduit/Network/Unix.hs:44:1: Warning:
+    Top-level binding with no type signature:
+      clientSettings :: FilePath -> SN.ClientSettingsUnix
+
+Data/Conduit/Network/Unix.hs:45:1: Warning:
+    Top-level binding with no type signature:
+      serverSettings :: FilePath -> SN.ServerSettingsUnix
+[ 6 of 12] Compiling Data.Conduit.Lazy ( Data/Conduit/Lazy.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Lazy.o )
+
+Data/Conduit/Lazy.hs:23:1: Warning:
+    Module ‘Control.Monad.Trans.Error’ is deprecated:
+      Use Control.Monad.Trans.Except instead
+
+Data/Conduit/Lazy.hs:99:11: Warning:
+    In the use of type constructor or class ‘Error’
+    (imported from Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+
+Data/Conduit/Lazy.hs:99:52: Warning:
+    In the use of type constructor or class ‘ErrorT’
+    (imported from Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+[ 7 of 12] Compiling Data.Conduit.Filesystem ( Data/Conduit/Filesystem.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Filesystem.o )
+[ 8 of 12] Compiling Data.Conduit.ByteString.Builder ( Data/Conduit/ByteString/Builder.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/ByteString/Builder.o )
+[ 9 of 12] Compiling Data.Conduit.Blaze ( Data/Conduit/Blaze.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Blaze.o )
+[10 of 12] Compiling Data.Conduit.Binary ( Data/Conduit/Binary.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Binary.o )
+[11 of 12] Compiling Data.Conduit.Process ( Data/Conduit/Process.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Process.o )
+[12 of 12] Compiling Data.Conduit.Attoparsec ( Data/Conduit/Attoparsec.hs, dist/dist-sandbox-38dfe3f3/build/Data/Conduit/Attoparsec.o )
+
+Data/Conduit/Attoparsec.hs:108:9: Warning:
+    In the use of ‘TI.textP’ (imported from Data.Text.Internal):
+    Deprecated: "Use text instead"
+In-place registering conduit-extra-1.1.7.0...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-conduit-extra-1.1.754496.0
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/conduit-extra-1.1.7.0
+Registering conduit-extra-1.1.7.0...

@@ -1,0 +1,84 @@
+Configuring haskoin-0.1.0.2...
+Building haskoin-0.1.0.2...
+Preprocessing library haskoin-0.1.0.2...
+[ 1 of 28] Compiling Network.Haskoin.Crypto.Curve ( Network/Haskoin/Crypto/Curve.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Curve.o )
+[ 2 of 28] Compiling Network.Haskoin.Crypto.NumberTheory ( Network/Haskoin/Crypto/NumberTheory.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/NumberTheory.o )
+[ 3 of 28] Compiling Network.Haskoin.Script.Types ( Network/Haskoin/Script/Types.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Script/Types.o )
+[ 4 of 28] Compiling Network.Haskoin.Util ( Network/Haskoin/Util.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Util.o )
+[ 5 of 28] Compiling Network.Haskoin.Crypto.Mnemonic ( Network/Haskoin/Crypto/Mnemonic.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Mnemonic.o )
+[ 6 of 28] Compiling Network.Haskoin.Crypto.BigWord ( Network/Haskoin/Crypto/BigWord.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/BigWord.o )
+
+Network/Haskoin/Crypto/BigWord.hs:157:10: Warning:
+    No explicit implementation for
+      (either ‘Data.Bits.rotate’
+              or
+              (‘Data.Bits.rotateL’ and ‘Data.Bits.rotateR’)) and ‘Data.Bits.bitSizeMaybe’
+    In the instance declaration for ‘Bits (BigWord n)’
+[ 7 of 28] Compiling Network.Haskoin.Crypto.Point ( Network/Haskoin/Crypto/Point.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Point.o )
+[ 8 of 28] Compiling Network.Haskoin.Protocol.Types ( Network/Haskoin/Protocol/Types.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Protocol/Types.o )
+[ 9 of 28] Compiling Network.Haskoin.Crypto.Hash ( Network/Haskoin/Crypto/Hash.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Hash.o )
+
+Network/Haskoin/Crypto/Hash.hs:48:1: Warning:
+    The import of ‘Binary’ from module ‘Data.Binary’ is redundant
+[10 of 28] Compiling Network.Haskoin.Constants ( prodnet/Network/Haskoin/Constants.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Constants.o )
+[11 of 28] Compiling Network.Haskoin.Crypto.Base58 ( Network/Haskoin/Crypto/Base58.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Base58.o )
+[12 of 28] Compiling Network.Haskoin.Crypto.Keys ( Network/Haskoin/Crypto/Keys.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Keys.o )
+[13 of 28] Compiling Network.Haskoin.Crypto.ECDSA ( Network/Haskoin/Crypto/ECDSA.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/ECDSA.o )
+
+Network/Haskoin/Crypto/ECDSA.hs:20:1: Warning:
+    The import of ‘MonadTrans’
+    from module ‘Control.Monad.Trans’ is redundant
+
+Network/Haskoin/Crypto/ECDSA.hs:21:1: Warning:
+    The import of ‘Applicative’
+    from module ‘Control.Applicative’ is redundant
+[14 of 28] Compiling Network.Haskoin.Crypto.ExtendedKeys ( Network/Haskoin/Crypto/ExtendedKeys.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/ExtendedKeys.o )
+[15 of 28] Compiling Network.Haskoin.Crypto.Merkle ( Network/Haskoin/Crypto/Merkle.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Merkle.o )
+[16 of 28] Compiling Network.Haskoin.Protocol.Message ( Network/Haskoin/Protocol/Message.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Protocol/Message.o )
+[17 of 28] Compiling Network.Haskoin.Protocol ( Network/Haskoin/Protocol.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Protocol.o )
+[18 of 28] Compiling Network.Haskoin.Crypto.Bloom ( Network/Haskoin/Crypto/Bloom.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/Bloom.o )
+[19 of 28] Compiling Network.Haskoin.Script.SigHash ( Network/Haskoin/Script/SigHash.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Script/SigHash.o )
+[20 of 28] Compiling Network.Haskoin.Script.Parser ( Network/Haskoin/Script/Parser.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Script/Parser.o )
+[21 of 28] Compiling Network.Haskoin.Crypto.NormalizedKeys ( Network/Haskoin/Crypto/NormalizedKeys.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto/NormalizedKeys.o )
+[22 of 28] Compiling Network.Haskoin.Crypto ( Network/Haskoin/Crypto.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Crypto.o )
+[23 of 28] Compiling Network.Haskoin.Stratum ( Network/Haskoin/Stratum.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Stratum.o )
+[24 of 28] Compiling Network.Haskoin.Script.Evaluator ( Network/Haskoin/Script/Evaluator.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Script/Evaluator.o )
+
+Network/Haskoin/Script/Evaluator.hs:31:1: Warning:
+    Module ‘Control.Monad.Error’ is deprecated:
+      Use Control.Monad.Except instead
+
+Network/Haskoin/Script/Evaluator.hs:76:10: Warning:
+    In the use of type constructor or class ‘Error’
+    (imported from Control.Monad.Error, but defined in transformers-0.4.3.0:Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+
+Network/Haskoin/Script/Evaluator.hs:76:10: Warning:
+    In the use of type constructor or class ‘Error’
+    (imported from Control.Monad.Error, but defined in transformers-0.4.3.0:Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+
+Network/Haskoin/Script/Evaluator.hs:78:28: Warning:
+    In the use of ‘noMsg’
+    (imported from Control.Monad.Error, but defined in transformers-0.4.3.0:Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+
+Network/Haskoin/Script/Evaluator.hs:122:21: Warning:
+    In the use of type constructor or class ‘ErrorT’
+    (imported from Control.Monad.Error, but defined in transformers-0.4.3.0:Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+
+Network/Haskoin/Script/Evaluator.hs:132:43: Warning:
+    In the use of ‘runErrorT’
+    (imported from Control.Monad.Error, but defined in transformers-0.4.3.0:Control.Monad.Trans.Error):
+    Deprecated: "Use Control.Monad.Trans.Except instead"
+[25 of 28] Compiling Network.Haskoin.Script ( Network/Haskoin/Script.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Script.o )
+[26 of 28] Compiling Network.Haskoin.Transaction.Builder ( Network/Haskoin/Transaction/Builder.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Transaction/Builder.o )
+[27 of 28] Compiling Network.Haskoin.Transaction ( Network/Haskoin/Transaction.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Transaction.o )
+[28 of 28] Compiling Network.Haskoin.Internals ( Network/Haskoin/Internals.hs, dist/dist-sandbox-38dfe3f3/build/Network/Haskoin/Internals.o )
+In-place registering haskoin-0.1.0.2...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-haskoin-0.1.054496.2
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/haskoin-0.1.0.2
+Registering haskoin-0.1.0.2...

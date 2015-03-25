@@ -1,0 +1,189 @@
+Configuring SHA2-0.2.5...
+Building SHA2-0.2.5...
+Preprocessing library SHA2-0.2.5...
+[1 of 4] Compiling Codec.Digest.SHA.Misc ( Codec/Digest/SHA/Misc.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Digest/SHA/Misc.o )
+
+Codec/Digest/SHA/Misc.hs:13:29: Warning:
+    Defaulting the following constraint(s) to type ‘Integer’
+      (Show a0)
+        arising from a use of ‘Numeric.showHex’
+        at Codec/Digest/SHA/Misc.hs:13:29-43
+      (Num a0)
+        arising from the literal ‘0’ at Codec/Digest/SHA/Misc.hs:13:45
+      (Integral a0)
+        arising from a use of ‘Numeric.showHex’
+        at Codec/Digest/SHA/Misc.hs:13:29-43
+    In the expression: Numeric.showHex 0 (Numeric.showHex n rest)
+    In an equation for ‘showHex’:
+        showHex n rest
+          | n < 16 = Numeric.showHex 0 (Numeric.showHex n rest)
+[2 of 4] Compiling Codec.Digest.SHA.IO ( dist/dist-sandbox-38dfe3f3/build/Codec/Digest/SHA/IO.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Digest/SHA/IO.o )
+
+Codec/Digest/SHA/IO.hsc:63:10: Warning:
+    No explicit implementation for
+      (either ‘peek’
+              or
+              ‘peekElemOff’
+              or
+              ‘peekByteOff’) and (either ‘poke’
+                                         or
+                                         ‘pokeElemOff’
+                                         or
+                                         ‘pokeByteOff’)
+    In the instance declaration for ‘Storable Ctx256’
+
+Codec/Digest/SHA/IO.hsc:67:10: Warning:
+    No explicit implementation for
+      (either ‘peek’
+              or
+              ‘peekElemOff’
+              or
+              ‘peekByteOff’) and (either ‘poke’
+                                         or
+                                         ‘pokeElemOff’
+                                         or
+                                         ‘pokeByteOff’)
+    In the instance declaration for ‘Storable Ctx384’
+
+Codec/Digest/SHA/IO.hsc:71:10: Warning:
+    No explicit implementation for
+      (either ‘peek’
+              or
+              ‘peekElemOff’
+              or
+              ‘peekByteOff’) and (either ‘poke’
+                                         or
+                                         ‘pokeElemOff’
+                                         or
+                                         ‘pokeByteOff’)
+    In the instance declaration for ‘Storable Ctx512’
+[3 of 4] Compiling Codec.Digest.SHA.Monad ( Codec/Digest/SHA/Monad.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Digest/SHA/Monad.o )
+[4 of 4] Compiling Codec.Digest.SHA ( Codec/Digest/SHA.hs, dist/dist-sandbox-38dfe3f3/build/Codec/Digest/SHA.o )
+
+cbits/sha2.c:627:31:
+     warning: 'memset' call operates on objects of type 'SHA256_CTX' (aka 'struct _SHA256_CTX') while the size is based on a different type 'SHA256_CTX *' (aka 'struct _SHA256_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:627:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:642:32:
+     warning: 'memset' call operates on objects of type 'SHA256_CTX' (aka 'struct _SHA256_CTX') while the size is based on a different type 'SHA256_CTX *' (aka 'struct _SHA256_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:642:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+
+cbits/sha2.c:951:31:
+     warning: 'memset' call operates on objects of type 'SHA512_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA512_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:951:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:965:32:
+     warning: 'memset' call operates on objects of type 'SHA512_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA512_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:965:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+
+cbits/sha2.c:1020:31:
+     warning: 'memset' call operates on objects of type 'SHA384_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA384_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:1020:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:1034:32:
+     warning: 'memset' call operates on objects of type 'SHA384_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA384_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:1034:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+6 warnings generated.
+
+cbits/sha2.c:627:31:
+     warning: 'memset' call operates on objects of type 'SHA256_CTX' (aka 'struct _SHA256_CTX') while the size is based on a different type 'SHA256_CTX *' (aka 'struct _SHA256_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:627:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:642:32:
+     warning: 'memset' call operates on objects of type 'SHA256_CTX' (aka 'struct _SHA256_CTX') while the size is based on a different type 'SHA256_CTX *' (aka 'struct _SHA256_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:642:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+
+cbits/sha2.c:951:31:
+     warning: 'memset' call operates on objects of type 'SHA512_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA512_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:951:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:965:32:
+     warning: 'memset' call operates on objects of type 'SHA512_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA512_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:965:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+
+cbits/sha2.c:1020:31:
+     warning: 'memset' call operates on objects of type 'SHA384_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA384_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+            MEMSET_BZERO(context, sizeof(context));
+                         ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:1020:31:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+            MEMSET_BZERO(context, sizeof(context));
+                                         ^~~~~~~
+
+cbits/sha2.c:1034:32:
+     warning: 'memset' call operates on objects of type 'SHA384_CTX' (aka 'struct _SHA512_CTX') while the size is based on a different type 'SHA384_CTX *' (aka 'struct _SHA512_CTX *') [-Wsizeof-pointer-memaccess]
+                    MEMSET_BZERO(context, sizeof(context));
+                                 ~~~~~~~         ^~~~~~~
+
+cbits/sha2.c:1034:32:
+     note: did you mean to dereference the argument to 'sizeof' (and multiply it by the number of elements)?
+                    MEMSET_BZERO(context, sizeof(context));
+                                                 ^~~~~~~
+6 warnings generated.
+In-place registering SHA2-0.2.5...
+Creating package registration file:
+/var/folders/8c/m6c659k54_b7whc95qh3mn_m0000gp/T/pkgConf-SHA2-0.254496.5
+Installing library in
+/Users/kjameslubin/hasketh/ethereum-data-sql/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.4/SHA2-0.2.5
+Registering SHA2-0.2.5...

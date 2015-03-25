@@ -52,7 +52,8 @@ library
                  , persistent-template
                  , persistent-postgresql
                  , monad-logger
-
+                 , aeson
+		 
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
