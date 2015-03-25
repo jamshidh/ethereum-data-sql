@@ -2,10 +2,11 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Blockchain.ExtWord (
-  Word256
+  Word256,
+  Word160
   ) where
 
-import Network.Haskoin.Crypto (Word256)
+import Network.Haskoin.Crypto (Word256, Word160)
 
 import Data.Ix
 
