@@ -13,7 +13,7 @@ module Blockchain.Data.Address (
   Address(..),
   prvKey2Address,
   pubKey2Address,
-  getNewAddress
+  getNewAddress_unsafe
   ) where
 
 import Control.Monad
