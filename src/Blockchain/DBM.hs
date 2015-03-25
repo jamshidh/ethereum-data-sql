@@ -60,7 +60,7 @@ data DBs =
     sqlBlockDB::SQLBlockDB
     }
 
-type DBM = StateT DBs IO
+type DBM = StateT DBs (ResourceT IO)
 
 connStr = "host=localhost dbname=eth user=kjameslubin password=test port=5432"
 
