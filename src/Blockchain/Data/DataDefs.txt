@@ -1,4 +1,4 @@
-BlockData
+BlockData json
     parentHash SHA
     unclesHash SHA
     coinbase Address
@@ -15,18 +15,18 @@ BlockData
     nonce SHA
     deriving Show Read Eq
 
-Block
+Block json
     blockData BlockData
     receiptTransactions [SignedTransaction]
     blockUncles [BlockData]
     deriving Show Read Eq
 
-BlockRef
+BlockRef json
     hash SHA
     block Block
     deriving Show Read Eq
 
-AddressState
+AddressState json
     nonce Integer
     balance Integer
     contractRoot SHAPtr

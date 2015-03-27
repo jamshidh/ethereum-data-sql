@@ -9,7 +9,8 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-
+{-# LANGUAGE DeriveGeneric              #-}
+    
 module Blockchain.Data.DataDefs (
   BlockData (..),
   Block (..),
@@ -41,10 +42,21 @@ import Blockchain.Util
 
 import Blockchain.Database.MerklePatricia
 
-
-
+-- import GHC.Generics
+import Data.Aeson
+import Data.Aeson.Types
+import Data.Text.Encoding
+import Control.Applicative
+       
 --import Debug.Trace
-
+instance ToJSON SHAPtr where
+  toJSON (SHAPtr s) = toJSON s
+  
+instance FromJSON SHAPtr where
+  parseJSON (String t) = pure . SHAPtr $ encodeUtf8 $ t
+  parseJSON v          = typeMismatch "SHAPtr" v
+         
+  
 entityDefs :: [EntityDef]
 entityDefs = $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
   

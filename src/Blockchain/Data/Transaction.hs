@@ -9,7 +9,8 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-
+{-# LANGUAGE DeriveGeneric              #-}
+    
 module Blockchain.Data.Transaction (
   Transaction(..)
   ) where
@@ -29,7 +30,9 @@ import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.Util
 
---import VM
+import Data.Aeson
+import qualified GHC.Generics as G
+
 
 --import Debug.Trace
 
@@ -48,8 +51,12 @@ data Transaction =
     tGasLimit::Integer,
     value::Integer,
     tInit::Code
-    } deriving (Show, Read, Eq)
+    } deriving (Show, Read, Eq, G.Generic)
 
+
+instance ToJSON Transaction
+instance FromJSON Transaction
+  
 instance Format Transaction where
   format MessageTX{tNonce=n, gasPrice=gp, tGasLimit=gl, to=to', value=v, tData=d} =
     CL.blue "Message Transaction" ++

@@ -8,7 +8,8 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-
+{-# LANGUAGE DeriveGeneric              #-}
+    
 module Blockchain.SHA (
   SHA(..),
   hash,
@@ -36,11 +37,17 @@ import qualified Database.Persist as P
 import Database.Persist.Types
 import Database.Persist.TH
 
-newtype SHA = SHA Word256 deriving (Show, Eq, Read)
+import qualified Data.Aeson as AS
+import GHC.Generics
+       
+newtype SHA = SHA Word256 deriving (Show, Eq, Read, Generic)
 
 derivePersistField "SHA"
 derivePersistField "SHAPtr"
 
+instance AS.ToJSON SHA
+instance AS.FromJSON SHA
+                   
 instance Pretty SHA where
   pretty (SHA x) = yellow $ text $ padZeros 64 $ showHex x ""
 

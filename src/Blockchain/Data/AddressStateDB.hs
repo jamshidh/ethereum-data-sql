@@ -99,7 +99,7 @@ getAllAddressStates = do
 putAddressState::Address->AddressState->DBM ()
 putAddressState address newState = 
   putKeyVal (addressAsNibbleString address) $ rlpEncode $ rlpSerialize $ rlpEncode newState
-
+  
 deleteAddressState::Address->DBM ()
 deleteAddressState address = 
   deleteKey (addressAsNibbleString address)

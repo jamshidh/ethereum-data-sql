@@ -8,7 +8,8 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
-
+{-# LANGUAGE DeriveGeneric              #-}
+    
 module Blockchain.Data.Address (
   Address(..),
   prvKey2Address,
@@ -17,6 +18,8 @@ module Blockchain.Data.Address (
   ) where
 
 import Control.Monad
+import Control.Applicative
+       
 import qualified Crypto.Hash.SHA3 as C
 import Data.Binary
 import qualified Data.ByteString as B
@@ -36,11 +39,30 @@ import qualified Database.Persist as P
 import Database.Persist.Types
 import Database.Persist.TH
 
-newtype Address = Address Word160 deriving (Show, Eq, Read)
+import qualified Data.Aeson as AS
+import Data.Aeson.Types
+       
+import GHC.Generics
+       
 
+newtype Address = Address Word160 deriving (Show, Eq, Read, Enum, Real, Bounded, Num, Ord, Generic, Integral)
+
+-- instance Integral Address
+         
+        
 derivePersistField "Address"
 
-
+parseIntegral :: Integral a => Value -> Parser a
+parseIntegral (Number n) = pure (floor n)
+parseIntegral v          = undefined
+              
+                   
+instance AS.ToJSON Address where
+  toJSON (Address x) = AS.object [ "address" AS..= (showHex x "") ]
+         
+instance AS.FromJSON Address where
+  parseJSON = parseIntegral
+  
 instance Pretty Address where
   pretty (Address x) = yellow $ text $ padZeros 40 $ showHex x ""
 

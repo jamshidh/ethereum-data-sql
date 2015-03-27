@@ -9,6 +9,7 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DeriveGeneric              #-}
 
 module Blockchain.Data.SignedTransaction (
   SignedTransaction(..),
@@ -39,6 +40,9 @@ import Blockchain.Data.Address
 import Blockchain.Data.Code
 import Blockchain.SHA
 
+import Data.Aeson
+import GHC.Generics
+       
 --import Debug.Trace
 
 {-
@@ -63,9 +67,12 @@ data SignedTransaction =
       v::BN.Word8,
       r::Integer,
       s::Integer
-    } deriving (Show, Read, Eq)
+    } deriving (Show, Read, Eq, Generic)
 
 derivePersistField "SignedTransaction"
+
+instance ToJSON SignedTransaction
+instance FromJSON SignedTransaction
 
 txHash :: SignedTransaction -> SHA
 txHash =  hash . rlpSerialize . rlpEncode 
