@@ -4,7 +4,6 @@
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
@@ -19,6 +18,8 @@ module Blockchain.SHA (
   ) where
 
 import Control.Monad
+import Control.Applicative
+       
 import qualified Crypto.Hash.SHA3 as C
 import Data.Binary
 import qualified Data.ByteString.Base16 as B16
@@ -38,6 +39,10 @@ import Database.Persist.Types
 import Database.Persist.TH
 
 import qualified Data.Aeson as AS
+import Data.Aeson.Types
+import Data.Text.Encoding
+import qualified Data.Text as T
+       
 import GHC.Generics
        
 newtype SHA = SHA Word256 deriving (Show, Eq, Read, Generic)
@@ -45,8 +50,13 @@ newtype SHA = SHA Word256 deriving (Show, Eq, Read, Generic)
 derivePersistField "SHA"
 derivePersistField "SHAPtr"
 
-instance AS.ToJSON SHA
-instance AS.FromJSON SHA
+instance AS.ToJSON SHA where
+  toJSON (SHA val) = AS.String $ decodeUtf8 $ BC.pack $ padZeros 64 $ showHex val ""
+  
+instance AS.FromJSON SHA where
+  parseJSON (AS.String t) =  pure $ SHA $ fst  $ head $ (readHex $ T.unpack $ t :: [(Word256,String)])
+  parseJSON v             = typeMismatch "SHA" v
+  
                    
 instance Pretty SHA where
   pretty (SHA x) = yellow $ text $ padZeros 64 $ showHex x ""

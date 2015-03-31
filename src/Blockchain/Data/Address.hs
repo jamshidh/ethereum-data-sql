@@ -9,6 +9,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
     
 module Blockchain.Data.Address (
   Address(..),
@@ -61,8 +62,16 @@ instance AS.ToJSON Address where
   toJSON (Address x) = AS.object [ "address" AS..= (showHex x "") ]
          
 instance AS.FromJSON Address where
-  parseJSON = parseIntegral
-  
+  parseJSON (Object v) = pure $ Address hex
+    where
+      ((hex, _):_) = readHex $ prsd :: [(Word160,String)]
+      (Success prsd) = parse (.: "address") v
+--  parseJSON (Object v) =   do
+--                              prsd <- v .: "address"
+--                              hex <- readHex $ prsd
+--                              return Address $ fst $ head $ hex
+  parseJSON _ = mzero
+   
 instance Pretty Address where
   pretty (Address x) = yellow $ text $ padZeros 40 $ showHex x ""
 

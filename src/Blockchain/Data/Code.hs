@@ -19,6 +19,8 @@ import Blockchain.Format
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as C
+import qualified Data.ByteString.Base16 as B16
        
 import Database.Persist
 import Database.Persist.Types
@@ -32,17 +34,16 @@ import Control.Applicative
        
 newtype Code = Code{codeBytes::B.ByteString} deriving (Show, Eq, Read, Generic)
 
+instance FromJSON Code
+instance ToJSON Code
+        
 instance FromJSON B.ByteString where
-             parseJSON (String t) = pure . encodeUtf8 $ t
+             parseJSON (String t) = pure $ fst $ B16.decode $ encodeUtf8 $ t
              parseJSON v          = typeMismatch "ByteString" v
 
 
 instance ToJSON B.ByteString where
-            toJSON = String . decodeUtf8 
-
-         
-instance FromJSON Code    
-instance ToJSON Code
+            toJSON  = String . decodeUtf8 .  B16.encode
          
 data CodeOrData = TCode Code | TData Integer deriving (Eq, Read, Show)
 
