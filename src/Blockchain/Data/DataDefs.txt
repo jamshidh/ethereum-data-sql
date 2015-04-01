@@ -33,7 +33,7 @@ AddressState json
     codeHash SHA
     deriving Show Read Eq
 
-SignedTX
+SignedTX json
     hash SHA
     transaction SignedTransaction
     deriving Show Read Eq

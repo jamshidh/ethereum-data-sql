@@ -48,7 +48,7 @@ import Blockchain.SHA
 type BlockDB = DB.DB
 type CodeDB = DB.DB
 type DetailsDB = DB.DB
-type SQLBlockDB = SQL.ConnectionPool
+type SQLDB = SQL.ConnectionPool
   
 
 data DBs =
@@ -57,7 +57,7 @@ data DBs =
     detailsDB::DetailsDB,
     stateDB::MPDB,
     codeDB::CodeDB,
-    sqlBlockDB::SQLBlockDB
+    sqlDB::SQLDB
     }
 
 type DBM = StateT DBs (ResourceT IO)
@@ -81,11 +81,11 @@ openDBs theType = do
   bdb <- DB.open (homeDir </> dbDir theType ++ blockDBPath) options
   ddb <- DB.open (homeDir </> dbDir theType ++ detailsDBPath) options
   sdb <- DB.open (homeDir </> dbDir theType ++ stateDBPath) options
-  sqlBlock <-   runStderrLoggingT  $ SQL.createPostgresqlPool connStr 20
-  SQL.runSqlPool (SQL.runMigration migrateAll) sqlBlock
+  sqldb <-   runStderrLoggingT  $ SQL.createPostgresqlPool connStr 20
+  SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
   return $ DBs
       bdb
       ddb
       MPDB{ ldb=sdb, stateRoot=error "no stateRoot defined"}
       sdb
-      sqlBlock
+      sqldb

@@ -18,9 +18,11 @@ module Blockchain.Data.AddressStateDB (
   addressStateExists
 ) where 
 
-import Database.Persist
+
+import Database.Persist hiding (get)
 import Database.Persist.Types
 import Database.Persist.TH
+import Database.Persist.Postgresql as SQL hiding (get)
 
 
 import Blockchain.DBM
@@ -43,7 +45,9 @@ import Data.List
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
-
+import qualified Control.Monad.State as ST
+import Control.Monad.Trans.Resource
+       
 import qualified Data.NibbleString as N
 
 
@@ -97,9 +101,11 @@ getAllAddressStates = do
   return $ fmap (rlpDecode . rlpDeserialize . rlpDecode) <$> states
 
 putAddressState::Address->AddressState->DBM ()
-putAddressState address newState = 
-  putKeyVal (addressAsNibbleString address) $ rlpEncode $ rlpSerialize $ rlpEncode newState
-  
+putAddressState address newState =
+  do
+     notused <- putAddressStateSql newState
+     putKeyVal (addressAsNibbleString address) $ rlpEncode $ rlpSerialize $ rlpEncode newState
+
 deleteAddressState::Address->DBM ()
 deleteAddressState address = 
   deleteKey (addressAsNibbleString address)
@@ -108,4 +114,10 @@ addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
 
-
+putAddressStateSql :: AddressState -> DBM (Key AddressState)
+putAddressStateSql a = do
+  ctx <- ST.get
+  runResourceT $
+    SQL.runSqlPool actions $ sqlDB $ ctx
+  where actions = do
+          SQL.insert $ a

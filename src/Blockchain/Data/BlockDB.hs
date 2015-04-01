@@ -74,7 +74,7 @@ putBlockSql ::Block->DBM (Key Block)
 putBlockSql b = do
   ctx <- get
   runResourceT $
-    SQL.runSqlPool actions $ sqlBlockDB $ ctx 
+    SQL.runSqlPool actions $ sqlDB $ ctx 
   where actions = do
           (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx})  (blockReceiptTransactions b)))
           SQL.insert $ (blockBlockData b)
