@@ -13,13 +13,17 @@
     
 module Blockchain.Data.DataDefs (
   BlockData (..),
+  BlockDataRef (..),
   Block (..),
   BlockRef (..),
   AddressState (..),
+  AddressStateRef (..),
   SignedTX (..),
   SHA (..),
   Address (..),
   SHAPtr (..),
+  Word160 (..),
+  Address (..),
   entityDefs,
   migrateAll 
   ) where

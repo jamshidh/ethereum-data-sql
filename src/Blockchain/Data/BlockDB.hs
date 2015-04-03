@@ -70,16 +70,31 @@ putBlock b = do
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
-putBlockSql ::Block->DBM (Key Block)
+putBlockSql ::Block->DBM (Key BlockDataRef)
 putBlockSql b = do
   ctx <- get
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx 
   where actions = do
-          (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx})  (blockReceiptTransactions b)))
-          SQL.insert $ (blockBlockData b)
+          blkId <- SQL.insert $ b                      
+          (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx, signedTXBlockId = blkId})  (blockReceiptTransactions b)))
           SQL.insert $ (BlockRef (blockHash b) b)
-          SQL.insert $ b
+          SQL.insert $ (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc  blkId) --- Horrible! Apparently I need to learn the Lens library, yesterday
+              where bd = (blockBlockData b)
+                    pH = blockDataParentHash bd
+                    uH = blockDataUnclesHash bd
+                    cB = blockDataCoinbase bd
+                    sR = blockDataStateRoot bd
+                    tR = blockDataTransactionsRoot bd
+                    rR = blockDataReceiptsRoot bd
+                    lB = blockDataLogBloom bd
+                    n =  blockDataNumber bd
+                    d  = blockDataDifficulty bd
+                    gL = blockDataGasLimit bd
+                    gU = blockDataGasUsed bd
+                    t  = blockDataTimestamp bd
+                    eD = blockDataExtraData bd
+                    nc = blockDataNonce bd
   
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =

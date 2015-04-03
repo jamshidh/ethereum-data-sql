@@ -103,7 +103,7 @@ getAllAddressStates = do
 putAddressState::Address->AddressState->DBM ()
 putAddressState address newState =
   do
-     notused <- putAddressStateSql newState
+     notused <- putAddressStateSql address newState
      putKeyVal (addressAsNibbleString address) $ rlpEncode $ rlpSerialize $ rlpEncode newState
 
 deleteAddressState::Address->DBM ()
@@ -114,10 +114,19 @@ addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
 
-putAddressStateSql :: AddressState -> DBM (Key AddressState)
-putAddressStateSql a = do
+putAddressStateSql :: Address -> AddressState -> DBM (Key AddressState)
+putAddressStateSql addr state = do
   ctx <- ST.get
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx
   where actions = do
-          SQL.insert $ a
+          SQL.insert $ aRef
+          SQL.insert $ state
+
+        aRef = AddressStateRef addr nonce bal cRoot cHash
+        nonce = addressStateNonce (state)
+        bal = addressStateBalance (state)
+        cRoot = addressStateContractRoot (state)
+        cHash = addressStateCodeHash (state)
+
+  

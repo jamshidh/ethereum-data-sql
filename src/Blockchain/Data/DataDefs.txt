@@ -15,6 +15,24 @@ BlockData json
     nonce SHA
     deriving Show Read Eq
 
+BlockDataRef json
+    parentHash SHA
+    unclesHash SHA
+    coinbase Address
+    stateRoot SHAPtr
+    transactionsRoot SHAPtr
+    receiptsRoot SHAPtr
+    logBloom B.ByteString
+    difficulty Integer
+    number Integer
+    gasLimit Integer
+    gasUsed Integer
+    timestamp UTCTime
+    extraData Integer
+    nonce SHA
+    blockId BlockId
+    deriving Show Read Eq
+
 Block json
     blockData BlockData
     receiptTransactions [SignedTransaction]
@@ -33,7 +51,16 @@ AddressState json
     codeHash SHA
     deriving Show Read Eq
 
+AddressStateRef json
+    address Address
+    nonce Integer
+    balance Integer
+    contractRoot SHAPtr
+    codeHash SHA
+    deriving Show Read Eq
+
 SignedTX json
     hash SHA
+    blockId BlockId
     transaction SignedTransaction
     deriving Show Read Eq

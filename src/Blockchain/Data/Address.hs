@@ -13,6 +13,7 @@
     
 module Blockchain.Data.Address (
   Address(..),
+  Word160(..),
   prvKey2Address,
   pubKey2Address,
   getNewAddress_unsafe
@@ -53,10 +54,6 @@ newtype Address = Address Word160 deriving (Show, Eq, Read, Enum, Real, Bounded,
         
 derivePersistField "Address"
 
-parseIntegral :: Integral a => Value -> Parser a
-parseIntegral (Number n) = pure (floor n)
-parseIntegral v          = undefined
-              
                    
 instance AS.ToJSON Address where
   toJSON (Address x) = AS.object [ "address" AS..= (showHex x "") ]
