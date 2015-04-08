@@ -4,11 +4,7 @@ module Blockchain.Constants where
 
 
 ethVersion::Integer
-ethVersion=54
---ethVersion=51
---ethVersion=49
---ethVersion=45
---ethVersion=48
+ethVersion=60
 shhVersion::Integer
 shhVersion=2
 
@@ -32,6 +28,8 @@ _Mwei = 1000000
 _Kwei = 1000
 wei = 1
 
+
+minimumDifficulty=131072
 
 blockDBPath::String
 blockDBPath="/blocks/"

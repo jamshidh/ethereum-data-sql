@@ -12,7 +12,8 @@ BlockData json
     gasUsed Integer
     timestamp UTCTime
     extraData Integer
-    nonce SHA
+    nonce Word64
+    mixHash SHA
     deriving Show Read Eq
 
 BlockDataRef json
@@ -29,7 +30,8 @@ BlockDataRef json
     gasUsed Integer
     timestamp UTCTime
     extraData Integer
-    nonce SHA
+    nonce Word64
+    mixHash SHA
     blockId BlockId
     deriving Show Read Eq
 
@@ -41,7 +43,7 @@ Block json
 
 BlockRef json
     hash SHA
-    block Block
+    blockId BlockId
     deriving Show Read Eq
 
 AddressState json

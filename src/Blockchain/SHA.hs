@@ -32,7 +32,9 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.RLP
 import Blockchain.Database.MerklePatricia
+import Blockchain.ExtWord
 import Blockchain.Util
+
 
 import qualified Database.Persist as P
 import Database.Persist.Types
@@ -49,6 +51,7 @@ newtype SHA = SHA Word256 deriving (Show, Eq, Read, Generic)
 
 derivePersistField "SHA"
 derivePersistField "SHAPtr"
+derivePersistField "Integer"
 
 instance AS.ToJSON SHA where
   toJSON (SHA val) = AS.String $ decodeUtf8 $ BC.pack $ padZeros 64 $ showHex val ""

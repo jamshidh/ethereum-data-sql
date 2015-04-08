@@ -41,6 +41,7 @@ import Data.ByteString as B
 
 import Blockchain.Data.Address
 import Blockchain.SHA
+import Blockchain.ExtWord
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
 
@@ -51,7 +52,8 @@ import Data.Aeson
 import Data.Aeson.Types
 import Data.Text.Encoding
 import Control.Applicative
-       
+
+
 --import Debug.Trace
 instance ToJSON SHAPtr where
   toJSON (SHAPtr s) = toJSON s

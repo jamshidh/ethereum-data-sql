@@ -1,13 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE EmptyDataDecls             #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Util (
   byteString2Integer,
@@ -15,7 +5,6 @@ module Blockchain.Util (
   integer2Bytes,
   integer2Bytes1,
   word160ToBytes,
-  word256ToBytes,
   padZeros,
   tab,
   showMem,
@@ -31,12 +20,6 @@ import Data.List
 import Data.Word
 import Network.Haskoin.Crypto (Word160, Word256)
 import Numeric
-
-import Database.Persist
-import Database.Persist.TH
-
--- no better place for this: must be imported due to GHC stage restriction
-derivePersistField "Integer"
 
 --I hate this, it is an ugly way to create an Integer from its component bytes.
 --There should be an easier way....
@@ -56,10 +39,6 @@ integer2Bytes x = integer2Bytes (x `shiftR` 8) ++ [fromInteger (x .&. 255)]
 integer2Bytes1::Integer->[Word8]
 integer2Bytes1 0 = [0]
 integer2Bytes1 x = integer2Bytes x
-
-word256ToBytes::Word256->[Word8]
-word256ToBytes x =
-     map (\byte -> fromIntegral $ (x `shiftR` (byte*8)) .&. 0xFF) [31,30..0]
 
 word160ToBytes::Word160->[Word8]
 word160ToBytes x =
