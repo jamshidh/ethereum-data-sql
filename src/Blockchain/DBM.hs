@@ -28,7 +28,7 @@ import System.Directory
 import System.FilePath
 --import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), (</>))
 
-import           Control.Monad.Logger    (runStderrLoggingT)
+import           Control.Monad.Logger    (runStderrLoggingT,runNoLoggingT)
 import qualified Database.Persist            as P
 import qualified Database.Persist.Postgresql as SQL
 import           Database.Persist.TH
@@ -62,7 +62,7 @@ data DBs =
 
 type DBM = StateT DBs (ResourceT IO)
 
-connStr = "host=localhost dbname=eth user=kjameslubin password=test port=5432"
+connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
 
 setStateRoot::SHAPtr->DBM ()
 setStateRoot stateRoot' = do
@@ -81,7 +81,7 @@ openDBs theType = do
   bdb <- DB.open (homeDir </> dbDir theType ++ blockDBPath) options
   ddb <- DB.open (homeDir </> dbDir theType ++ detailsDBPath) options
   sdb <- DB.open (homeDir </> dbDir theType ++ stateDBPath) options
-  sqldb <-   runStderrLoggingT  $ SQL.createPostgresqlPool connStr 20
+  sqldb <-   runNoLoggingT  $ SQL.createPostgresqlPool connStr 20
   SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
   return $ DBs
       bdb
