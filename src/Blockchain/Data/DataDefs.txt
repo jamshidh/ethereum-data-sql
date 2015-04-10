@@ -6,10 +6,10 @@ BlockData json
     transactionsRoot SHAPtr
     receiptsRoot SHAPtr
     logBloom B.ByteString
-    difficulty Integer
-    number Integer
-    gasLimit Integer
-    gasUsed Integer
+    difficulty Integer sqltype=numeric(1000,0)
+    number Integer sqltype=numeric(1000,0)
+    gasLimit Integer sqltype=numeric(1000,0)
+    gasUsed Integer sqltype=numeric(1000,0)
     timestamp UTCTime
     extraData Integer
     nonce Word64
@@ -24,10 +24,10 @@ BlockDataRef json
     transactionsRoot SHAPtr
     receiptsRoot SHAPtr
     logBloom B.ByteString
-    difficulty Integer
-    number Integer
-    gasLimit Integer
-    gasUsed Integer
+    difficulty Integer sqltype=numeric(1000,0)
+    number Integer sqltype=numeric(1000,0)
+    gasLimit Integer sqltype=numeric(1000,0)
+    gasUsed Integer sqltype=numeric(1000,0)
     timestamp UTCTime
     extraData Integer
     nonce Word64
@@ -47,16 +47,16 @@ BlockRef json
     deriving Show Read Eq
 
 AddressState json
-    nonce Integer
-    balance Integer
+    nonce Integer sqltype=numeric(1000,0)
+    balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr
     codeHash SHA
     deriving Show Read Eq
 
 AddressStateRef json
     address Address
-    nonce Integer
-    balance Integer
+    nonce Integer sqltype=numeric(1000,0)
+    balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr
     codeHash SHA
     deriving Show Read Eq
