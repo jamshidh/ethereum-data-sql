@@ -33,17 +33,13 @@ BlockDataRef json
     nonce Word64
     mixHash SHA
     blockId BlockId
+    hash SHA
     deriving Show Read Eq
 
 Block json
     blockData BlockData
     receiptTransactions [SignedTransaction]
     blockUncles [BlockData]
-    deriving Show Read Eq
-
-BlockRef json
-    hash SHA
-    blockId BlockId
     deriving Show Read Eq
 
 AddressState json

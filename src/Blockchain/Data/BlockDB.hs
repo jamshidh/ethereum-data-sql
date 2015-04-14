@@ -79,8 +79,7 @@ putBlockSql b = do
   where actions = do
           blkId <- SQL.insert $ b                      
           (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx, signedTXBlockId = blkId})  (blockReceiptTransactions b)))
-          SQL.insert $ (BlockRef (blockHash b) blkId )
-          SQL.insert $ (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH  blkId) --- Horrible! Apparently I need to learn the Lens library, yesterday
+          SQL.insert $ (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b)) --- Horrible! Apparently I need to learn the Lens library, yesterday
               where bd = (blockBlockData b)
                     pH = blockDataParentHash bd
                     uH = blockDataUnclesHash bd

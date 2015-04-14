@@ -15,7 +15,6 @@ module Blockchain.Data.DataDefs (
   BlockData (..),
   BlockDataRef (..),
   Block (..),
-  BlockRef (..),
   AddressState (..),
   AddressStateRef (..),
   SignedTX (..),
