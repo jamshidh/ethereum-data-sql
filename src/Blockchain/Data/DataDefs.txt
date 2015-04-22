@@ -25,7 +25,7 @@ BlockDataRef json
     receiptsRoot SHAPtr
     logBloom B.ByteString
     difficulty Integer sqltype=numeric(1000,0)
-    number Integer sqltype=numeric(1000,0)
+    number Integer sqltype=bigint
     gasLimit Integer sqltype=numeric(1000,0)
     gasUsed Integer sqltype=numeric(1000,0)
     timestamp UTCTime
@@ -57,8 +57,18 @@ AddressStateRef json
     codeHash SHA
     deriving Show Read Eq
 
-SignedTX json
+RawTransaction json
+    from Address
+    nonce Integer sqltype=numeric(1000,0)
+    gasPrice Integer sqltype=numeric(1000,0)
+    gasLimit Integer sqltype=numeric(1000,0)
+    to Address Maybe
+    value Integer sqltype=numeric(1000,0)
+    codeOrData B.ByteString
+    v Word8
+    r Integer
+    s Integer
     hash SHA
     blockId BlockId
-    transaction SignedTransaction
-    deriving Show Read Eq
+    Primary from
+    deriving Show Read Eq    

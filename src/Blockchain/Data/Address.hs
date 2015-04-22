@@ -41,6 +41,9 @@ import qualified Database.Persist as P
 import Database.Persist.Types
 import Database.Persist.TH
 
+import Web.PathPieces
+import qualified Data.Text as T
+
 import qualified Data.Aeson as AS
 import Data.Aeson.Types
        
@@ -54,6 +57,11 @@ newtype Address = Address Word160 deriving (Show, Eq, Read, Enum, Real, Bounded,
         
 derivePersistField "Address"
 
+instance PathPiece Address where
+  toPathPiece (Address x) = T.pack $ showHex  (fromIntegral $ x :: Integer) ""
+  fromPathPiece t = Just (Address wd160)
+    where
+      ((wd160, _):_) = readHex $ T.unpack $ t ::  [(Word160,String)]
                    
 instance AS.ToJSON Address where
   toJSON (Address x) = AS.object [ "address" AS..= (showHex x "") ]

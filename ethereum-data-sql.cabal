@@ -57,7 +57,8 @@ library
                  , syb
                  , text
                  , attoparsec
-
+                 , path-pieces
+		 
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
@@ -78,10 +79,11 @@ library
                    Blockchain.Util
                    Blockchain.Data.BlockDB
                    Blockchain.Data.AddressStateDB
-    
+                   Blockchain.Data.RawTransaction
 
     C-sources: fastNonceFinder/nonceFinder.c
-    ghc-options: -Wall
+    ghc-options: -Wall -O2 
+    extensions: TemplateHaskell
     buildable: True
     hs-source-dirs: src
 

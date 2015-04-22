@@ -20,10 +20,10 @@ module Blockchain.Data.AddressStateDB (
 
 
 import Database.Persist hiding (get)
+import Database.Persist.Class
 import Database.Persist.Types
 import Database.Persist.TH
 import Database.Persist.Postgresql as SQL hiding (get)
-
 
 import Blockchain.DBM
 import Blockchain.Data.Address
@@ -114,15 +114,15 @@ addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
 
-putAddressStateSql :: Address -> AddressState -> DBM (Key AddressState)
+putAddressStateSql ::Address -> AddressState -> DBM (Key AddressStateRef)
 putAddressStateSql addr state = do
   ctx <- ST.get
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx
   where actions = do
+--         oldAddressStateId <- SQL.selectFirst $ [ AddressStateRefAddress SQL.==. addr ] :: Entity AddressStateRef-- utterly confused that haskell can't find constructor
           SQL.insert $ aRef
-          SQL.insert $ state
-
+ 
         aRef = AddressStateRef addr nonce bal cRoot cHash
         nonce = addressStateNonce (state)
         bal = addressStateBalance (state)

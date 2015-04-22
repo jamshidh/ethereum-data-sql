@@ -53,6 +53,7 @@ import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
+import Blockchain.Data.RawTransaction
 import Blockchain.Util
 import Blockchain.ExtWord
 import Blockchain.Data.DataDefs
@@ -71,6 +72,31 @@ putBlock b = do
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
+
+tx2TXRef :: SignedTransaction -> RawTransaction
+tx2TXRef tx = undefined
+
+-- blk2BlkDataRef :: Block -> BlockId ->  BlockDataRef
+blk2BlkDataRef b blkId = (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b)) --- Horrible! Apparently I need to learn the Lens library, yesterday
+  where
+      bd = (blockBlockData b)
+      pH = blockDataParentHash bd
+      uH = blockDataUnclesHash bd
+      cB = blockDataCoinbase bd
+      sR = blockDataStateRoot bd
+      tR = blockDataTransactionsRoot bd
+      rR = blockDataReceiptsRoot bd
+      lB = blockDataLogBloom bd
+      n =  blockDataNumber bd
+      d  = blockDataDifficulty bd
+      gL = blockDataGasLimit bd
+      gU = blockDataGasUsed bd
+      t  = blockDataTimestamp bd
+      eD = blockDataExtraData bd
+      nc = blockDataNonce bd
+      mH = blockDataMixHash bd
+
+
 putBlockSql ::Block->DBM (Key BlockDataRef)
 putBlockSql b = do
   ctx <- get
@@ -78,24 +104,10 @@ putBlockSql b = do
     SQL.runSqlPool actions $ sqlDB $ ctx 
   where actions = do
           blkId <- SQL.insert $ b                      
-          (mapM_ SQL.insert (map (\tx -> SignedTX{signedTXHash = txHash tx, signedTXTransaction=tx, signedTXBlockId = blkId})  (blockReceiptTransactions b)))
-          SQL.insert $ (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b)) --- Horrible! Apparently I need to learn the Lens library, yesterday
-              where bd = (blockBlockData b)
-                    pH = blockDataParentHash bd
-                    uH = blockDataUnclesHash bd
-                    cB = blockDataCoinbase bd
-                    sR = blockDataStateRoot bd
-                    tR = blockDataTransactionsRoot bd
-                    rR = blockDataReceiptsRoot bd
-                    lB = blockDataLogBloom bd
-                    n =  blockDataNumber bd
-                    d  = blockDataDifficulty bd
-                    gL = blockDataGasLimit bd
-                    gU = blockDataGasUsed bd
-                    t  = blockDataTimestamp bd
-                    eD = blockDataExtraData bd
-                    nc = blockDataNonce bd
-                    mH = blockDataMixHash bd
+  --        (mapM_ SQL.insert (map (\tx -> TransactionRef{signedTXHash = txHash tx, signedTXTransaction=tx, signedTXBlockId = blkId})  (blockReceiptTransactions b)))
+          SQL.insert $ blk2BlkDataRef b blkId
+              where txList = blockReceiptTransactions b
+                    
                     
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =

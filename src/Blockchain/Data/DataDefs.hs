@@ -17,9 +17,8 @@ module Blockchain.Data.DataDefs (
   Block (..),
   AddressState (..),
   AddressStateRef (..),
-  SignedTX (..),
+  RawTransaction (..),
   SHA (..),
-  Address (..),
   SHAPtr (..),
   Word160 (..),
   Address (..),
@@ -33,7 +32,6 @@ import Database.Persist.TH
 import Database.Persist.Postgresql
 import Database.Persist.Quasi
  
---import Database.Persist.EntityDef
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.ByteString as B
@@ -46,14 +44,12 @@ import Blockchain.Util
 
 import Blockchain.Database.MerklePatricia
 
--- import GHC.Generics
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Text.Encoding
 import Control.Applicative
 
 
---import Debug.Trace
 instance ToJSON SHAPtr where
   toJSON (SHAPtr s) = toJSON s
   
@@ -64,7 +60,7 @@ instance FromJSON SHAPtr where
   
 entityDefs :: [EntityDef]
 entityDefs = $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
-  
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] 
     $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
 

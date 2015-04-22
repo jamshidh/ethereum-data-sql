@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Blockchain.ExtWord (
+  Word8,
   Word64,
   Word128, 
   Word160,
