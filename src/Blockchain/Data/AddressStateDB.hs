@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, ForeignFunctionInterface #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
@@ -36,12 +37,15 @@ import Blockchain.SHA
 import Blockchain.Data.SignedTransaction
 import Blockchain.Util
 import Blockchain.Data.BlockDB
-import Blockchain.Data.DataDefs
+import qualified Blockchain.Data.DataDefs as DD
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
 import Data.Functor
 import Data.List
+import Data.Time
+import qualified Data.ByteString as B
+
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
@@ -49,6 +53,11 @@ import qualified Control.Monad.State as ST
 import Control.Monad.Trans.Resource
        
 import qualified Data.NibbleString as N
+
+
+share [ mkPersist sqlSettings ]
+    DD.entityDefs
+
 
 
 blankAddressState::AddressState
@@ -114,14 +123,16 @@ addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
 
-putAddressStateSql ::Address -> AddressState -> DBM (Key AddressStateRef)
+putAddressStateSql ::Address -> AddressState -> DBM ()
 putAddressStateSql addr state = do
   ctx <- ST.get
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx
   where actions = do
---         oldAddressStateId <- SQL.selectFirst $ [ AddressStateRefAddress SQL.==. addr ] :: Entity AddressStateRef-- utterly confused that haskell can't find constructor
-          SQL.insert $ aRef
+            oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
+            case oldAddressStateId of
+              (Just oaId) -> SQL.replace (entityKey $ oaId) $ aRef
+              _ -> SQL.insert_ $ aRef
  
         aRef = AddressStateRef addr nonce bal cRoot cHash
         nonce = addressStateNonce (state)
