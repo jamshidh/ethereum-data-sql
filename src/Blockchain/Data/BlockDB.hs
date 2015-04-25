@@ -59,6 +59,7 @@ import Blockchain.Util
 import Blockchain.Data.RawTransaction
 import Blockchain.Data.Transaction
 import Blockchain.Data.DataDefs
+import Blockchain.Data.Code
 
 import Control.Monad.State
 import Control.Monad.Trans.Resource
@@ -75,8 +76,14 @@ putBlock b = do
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
 
-tx2TXRef :: Transaction -> RawTransaction
-tx2TXRef tx = undefined
+-- tx2RawTX :: Transaction -> BlockId -> RawTransaction
+tx2RawTX tx blkId =
+  case tx of
+    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId)
+    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId)
+    _ -> error "couldn't convert Transaction to RawTransaction"
+      
+      
 
 -- blk2BlkDataRef :: Block -> BlockId ->  BlockDataRef
 blk2BlkDataRef b blkId = (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b)) --- Horrible! Apparently I need to learn the Lens library, yesterday
@@ -106,7 +113,7 @@ putBlockSql b = do
     SQL.runSqlPool actions $ sqlDB $ ctx 
   where actions = do
           blkId <- SQL.insert $ b                      
-  --        (mapM_ SQL.insert (map (\tx -> TransactionRef{signedTXHash = txHash tx, signedTXTransaction=tx, signedTXBlockId = blkId})  (blockReceiptTransactions b)))
+          mapM_ SQL.insert (map (\tx -> tx2RawTX tx blkId)  (blockReceiptTransactions b))
           SQL.insert $ blk2BlkDataRef b blkId
               where txList = blockReceiptTransactions b
                     

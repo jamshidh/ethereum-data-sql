@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+
 
 module Blockchain.Data.PersistTypes where
 
@@ -14,12 +14,29 @@ import Blockchain.Util
 import Blockchain.SHA
 import Blockchain.Database.MerklePatricia
 
-import qualified Data.ByteString as BS
+import Control.Applicative
 
--- may change later to something sensible
+import qualified Data.ByteString as BS
+import qualified Data.Text as T
+
+-- these derived instances may later change
+
 derivePersistField "Integer"
 derivePersistField "Transaction"
 
+{-
+showHexFixed :: (Integral a, Show a) => Int -> a -> String
+showHexFixed len val = padZeros $ showHex val ""
+    where padZeros s = if length s >= len then s else padZeros ('0' : s)
+
+instance PersistField Integer where
+  toPersistValue i = PersistText . T.pack $ showHexFixed 66 i
+  fromPersistValue (PersistText s) = read $ "0x" <> T.unpack s
+  fromPersistValue x = Left $ T.pack "PersistField Integer: Expected hexadecimal char(66), received: " <> T.pack (show x)
+
+instance PersistFieldSql Integer where
+  sqlType _ = SqlOther $ T.pack "char(66)" -- fixed length character string, stored inline
+-}
 instance PersistField SHAPtr where
   toPersistValue (SHAPtr s) = PersistByteString $ s
   fromPersistValue (PersistByteString s) = Right $ SHAPtr $ s

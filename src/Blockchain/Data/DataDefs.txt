@@ -65,10 +65,8 @@ RawTransaction json
     to Address Maybe
     value Integer sqltype=numeric(1000,0)
     codeOrData B.ByteString
-    v Word8
+    v Integer
     r Integer
-    s Integer
-    hash SHA
+    s Word8
     blockId BlockId
-    Primary from
     deriving Show Read Eq    

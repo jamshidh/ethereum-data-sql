@@ -13,6 +13,7 @@
 
 
 module Blockchain.Data.Transaction (
+  Transaction(..),
   Transaction(transactionNonce,
               transactionGasPrice,
               transactionGasLimit,
