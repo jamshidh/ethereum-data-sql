@@ -69,7 +69,6 @@ library
                    Blockchain.Data.DataDefs
                    Blockchain.Data.Code
                    Blockchain.Data.Log
-                   Blockchain.Data.Peer
                    Blockchain.Data.Transaction
                    Blockchain.Data.TransactionReceipt
                    Blockchain.DB.CodeDB
@@ -81,8 +80,7 @@ library
                    Blockchain.Data.MiscJSON
 
     C-sources: fastNonceFinder/nonceFinder.c
-    ghc-options: -Wall -O2 
-    extensions: TemplateHaskell
+    ghc-options: -Wall
     buildable: True
     hs-source-dirs: src
 

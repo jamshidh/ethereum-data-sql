@@ -19,6 +19,7 @@ module Blockchain.Data.DataDefs (
   AddressStateRef (..),
   RawTransaction (..),
   Address (..),
+  SHA (..),
   entityDefs,
   migrateAll 
   ) where
@@ -46,6 +47,7 @@ import qualified Data.ByteString as BS
 
 import Blockchain.SHA
 import Blockchain.ExtWord
+import Data.Word
 
 import Blockchain.Data.MiscJSON
 
