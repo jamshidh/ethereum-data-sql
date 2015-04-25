@@ -11,6 +11,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.AddressStateDB (
+  AddressState(..),
   blankAddressState,
   getAddressState,
   getAllAddressStates,
@@ -34,10 +35,11 @@ import Blockchain.ExtDBs
 import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.SHA
-import Blockchain.Data.SignedTransaction
 import Blockchain.Util
 import Blockchain.Data.BlockDB
-import qualified Blockchain.Data.DataDefs as DD
+import Blockchain.Data.Transaction
+
+import Blockchain.Data.DataDefs
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
@@ -55,10 +57,8 @@ import Control.Monad.Trans.Resource
 import qualified Data.NibbleString as N
 
 
-share [ mkPersist sqlSettings ]
-    DD.entityDefs
-
-
+-- share [ mkPersist sqlSettings ]
+--    DD.entityDefs
 
 blankAddressState::AddressState
 blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=emptyTriePtr, addressStateCodeHash=hash "" }
@@ -123,17 +123,18 @@ addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
 
-putAddressStateSql ::Address -> AddressState -> DBM ()
+putAddressStateSql ::Address -> AddressState -> DBM (Key AddressStateRef )
 putAddressStateSql addr state = do
   ctx <- ST.get
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx
   where actions = do
-            oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
+          {-  oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
             case oldAddressStateId of
               (Just oaId) -> SQL.replace (entityKey $ oaId) $ aRef
               _ -> SQL.insert_ $ aRef
- 
+ -}        SQL.insert $ aRef
+          
         aRef = AddressStateRef addr nonce bal cRoot cHash
         nonce = addressStateNonce (state)
         bal = addressStateBalance (state)

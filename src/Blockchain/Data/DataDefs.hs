@@ -18,9 +18,6 @@ module Blockchain.Data.DataDefs (
   AddressState (..),
   AddressStateRef (..),
   RawTransaction (..),
-  SHA (..),
-  SHAPtr (..),
-  Word160 (..),
   Address (..),
   entityDefs,
   migrateAll 
@@ -31,33 +28,27 @@ import Database.Persist.Types
 import Database.Persist.TH
 import Database.Persist.Postgresql
 import Database.Persist.Quasi
- 
+
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.ByteString as B
 
 import Blockchain.Data.Address
-import Blockchain.SHA
-import Blockchain.ExtWord
-import Blockchain.Data.SignedTransaction
-import Blockchain.Util
-
 import Blockchain.Database.MerklePatricia
+import Blockchain.Data.Transaction
+import Blockchain.Data.PersistTypes
 
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Text.Encoding
 import Control.Applicative
+import qualified Data.ByteString as BS
 
+import Blockchain.SHA
+import Blockchain.ExtWord
 
-instance ToJSON SHAPtr where
-  toJSON (SHAPtr s) = toJSON s
-  
-instance FromJSON SHAPtr where
-  parseJSON (String t) = pure . SHAPtr $ encodeUtf8 $ t
-  parseJSON v          = typeMismatch "SHAPtr" v
-         
-  
+import Blockchain.Data.MiscJSON
+
 entityDefs :: [EntityDef]
 entityDefs = $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
 

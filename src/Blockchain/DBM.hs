@@ -37,11 +37,8 @@ import           Database.Persist.Types
 import Blockchain.Constants
 import Blockchain.Database.MerklePatricia
 import Blockchain.Data.Transaction
-import Blockchain.Data.SignedTransaction
-import Blockchain.Util
 import Blockchain.Data.DataDefs
 import Blockchain.Data.Code
-import Blockchain.SHA
 
 --import Debug.Trace
 

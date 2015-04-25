@@ -13,7 +13,6 @@
     
 module Blockchain.Data.Address (
   Address(..),
-  Word160(..),
   prvKey2Address,
   pubKey2Address,
   getNewAddress_unsafe
@@ -41,22 +40,25 @@ import qualified Database.Persist as P
 import Database.Persist.Types
 import Database.Persist.TH
 
-import Web.PathPieces
 import qualified Data.Text as T
 
 import qualified Data.Aeson as AS
 import Data.Aeson.Types
        
 import GHC.Generics
-       
+import Blockchain.SHA
+import Blockchain.Util
+import Web.PathPieces
 
 newtype Address = Address Word160 deriving (Show, Eq, Read, Enum, Real, Bounded, Num, Ord, Generic, Integral)
 
--- instance Integral Address
-         
         
 derivePersistField "Address"
 
+{-
+ Was necessary to make Address a primary key - which we no longer do (but rather index on the address field).
+ May remove in the future
+-}
 instance PathPiece Address where
   toPathPiece (Address x) = T.pack $ showHex  (fromIntegral $ x :: Integer) ""
   fromPathPiece t = Just (Address wd160)
@@ -71,10 +73,6 @@ instance AS.FromJSON Address where
     where
       ((hex, _):_) = readHex $ prsd :: [(Word160,String)]
       (Success prsd) = parse (.: "address") v
---  parseJSON (Object v) =   do
---                              prsd <- v .: "address"
---                              hex <- readHex $ prsd
---                              return Address $ fst $ head $ hex
   parseJSON _ = mzero
    
 instance Pretty Address where

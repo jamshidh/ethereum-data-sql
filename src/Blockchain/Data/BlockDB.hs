@@ -10,6 +10,8 @@
 {-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.BlockDB (
+  Block(..),
+  BlockData(..),
   blockHash,
   powFunc,
   headerHashWithoutNonce,
@@ -49,13 +51,13 @@ import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 import qualified Blockchain.Database.MerklePatricia as MP
 import Blockchain.ExtDBs
+import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.SHA
-import Blockchain.Data.SignedTransaction
-import Blockchain.Data.RawTransaction
 import Blockchain.Util
-import Blockchain.ExtWord
+import Blockchain.Data.RawTransaction
+import Blockchain.Data.Transaction
 import Blockchain.Data.DataDefs
 
 import Control.Monad.State
@@ -73,7 +75,7 @@ putBlock b = do
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 
 
-tx2TXRef :: SignedTransaction -> RawTransaction
+tx2TXRef :: Transaction -> RawTransaction
 tx2TXRef tx = undefined
 
 -- blk2BlkDataRef :: Block -> BlockId ->  BlockDataRef

@@ -1,32 +1,20 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE EmptyDataDecls             #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
 
 module Blockchain.Data.TransactionReceipt(
   TransactionReceipt(..),
   PostTransactionState(..)
   ) where
 
-import Database.Persist
-import Database.Persist.Types
-import Database.Persist.TH
-
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import qualified Blockchain.Colors as CL
 import Blockchain.Format
 import Blockchain.SHA
-import Blockchain.Data.SignedTransaction
 import Blockchain.Data.RLP
+import Blockchain.Data.Transaction
 
-data PostTransactionState = PostTransactionState SHA deriving (Show, Read, Eq)
+import Debug.Trace
+
+data PostTransactionState = PostTransactionState SHA deriving (Show)
 
 instance RLPSerializable PostTransactionState where
   rlpDecode x = PostTransactionState $ rlpDecode x
@@ -34,10 +22,10 @@ instance RLPSerializable PostTransactionState where
 
 data TransactionReceipt =
   TransactionReceipt {
-    theTransaction::SignedTransaction,
+    theTransaction::Transaction,
     postTransactionState::PostTransactionState,
     cumulativeGasUsed::Integer
-    } deriving (Show, Read, Eq)
+    } deriving (Show)
 
 
 {-
@@ -68,7 +56,7 @@ instance Format TransactionReceipt where
 instance RLPSerializable TransactionReceipt where
   rlpDecode (RLPArray [t, pts, gasUsed]) =
     TransactionReceipt {
-      theTransaction = rlpDecode t,
+      theTransaction = trace ("the val: " ++ show t) $ rlpDecode t,
       postTransactionState = rlpDecode pts,
       cumulativeGasUsed = rlpDecode gasUsed
       }
@@ -79,4 +67,3 @@ instance RLPSerializable TransactionReceipt where
     postTransactionState=p,
     cumulativeGasUsed=gasUsed} =
     RLPArray [rlpEncode t, rlpEncode p, rlpEncode gasUsed]
-

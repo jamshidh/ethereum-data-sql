@@ -34,21 +34,6 @@ import Control.Applicative
        
 newtype Code = Code{codeBytes::B.ByteString} deriving (Show, Eq, Read, Generic)
 
-instance FromJSON Code
-instance ToJSON Code
-        
-instance FromJSON B.ByteString where
-             parseJSON (String t) = pure $ fst $ B16.decode $ encodeUtf8 $ t
-             parseJSON v          = typeMismatch "ByteString" v
-
-
-instance ToJSON B.ByteString where
-            toJSON  = String . decodeUtf8 .  B16.encode
-         
-data CodeOrData = TCode Code | TData Integer deriving (Eq, Read, Show)
-
-derivePersistField "CodeOrData"
-
 instance RLPSerializable Code where
     rlpEncode (Code bytes) = rlpEncode bytes
     rlpDecode = Code . rlpDecode

@@ -11,6 +11,7 @@ import qualified Data.ByteString.Lazy as BL
 import Blockchain.DBM
 import Blockchain.ExtDBs
 import Blockchain.SHA
+import Blockchain.Database.MerklePatricia
 
 addCode::B.ByteString->DBM ()
 addCode = codeDBPut

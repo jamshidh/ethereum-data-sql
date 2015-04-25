@@ -38,7 +38,7 @@ BlockDataRef json
 
 Block json
     blockData BlockData
-    receiptTransactions [SignedTransaction]
+    receiptTransactions [Transaction]
     blockUncles [BlockData]
     deriving Show Read Eq
 
