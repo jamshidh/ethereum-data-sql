@@ -38,7 +38,6 @@ import Blockchain.SHA
 import Blockchain.Util
 import Blockchain.Data.BlockDB
 import Blockchain.Data.Transaction
-
 import Blockchain.Data.DataDefs
 
 import Data.Binary
@@ -56,11 +55,13 @@ import Control.Monad.Trans.Resource
        
 import qualified Data.NibbleString as N
 
+{-
+share [ mkPersist sqlSettings ]
+    DD.entityDefs
+-}
 
--- share [ mkPersist sqlSettings ]
---    DD.entityDefs
 
-blankAddressState::AddressState
+blankAddressState:: AddressState
 blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=emptyTriePtr, addressStateCodeHash=hash "" }
 
 
@@ -129,11 +130,12 @@ putAddressStateSql addr state = do
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx
   where actions = do
-          {-  oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
+   {-         oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
             case oldAddressStateId of
               (Just oaId) -> SQL.replace (entityKey $ oaId) $ aRef
               _ -> SQL.insert_ $ aRef
- -}        SQL.insert $ aRef
+    -}
+            SQL.insert $ aRef
           
         aRef = AddressStateRef addr nonce bal cRoot cHash
         nonce = addressStateNonce (state)

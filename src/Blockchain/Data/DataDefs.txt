@@ -5,13 +5,13 @@ BlockData json
     stateRoot SHAPtr
     transactionsRoot SHAPtr
     receiptsRoot SHAPtr
-    logBloom B.ByteString
+    logBloom BS.ByteString
     difficulty Integer sqltype=numeric(1000,0)
     number Integer sqltype=numeric(1000,0)
     gasLimit Integer sqltype=numeric(1000,0)
     gasUsed Integer sqltype=numeric(1000,0)
     timestamp UTCTime
-    extraData Integer
+    extraData Integer 
     nonce Word64
     mixHash SHA
     deriving Show Read Eq
@@ -23,7 +23,7 @@ BlockDataRef json
     stateRoot SHAPtr
     transactionsRoot SHAPtr
     receiptsRoot SHAPtr
-    logBloom B.ByteString
+    logBloom BS.ByteString
     difficulty Integer sqltype=numeric(1000,0)
     number Integer sqltype=bigint
     gasLimit Integer sqltype=numeric(1000,0)
@@ -43,28 +43,28 @@ Block json
     deriving Show Read Eq
 
 AddressState json
-    nonce Integer sqltype=numeric(1000,0)
+    nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
-    contractRoot SHAPtr
-    codeHash SHA
+    contractRoot SHAPtr sqltype=varchar(256)
+    codeHash SHA sqltype=varchar(256)
     deriving Show Read Eq
 
 AddressStateRef json
-    address Address
-    nonce Integer sqltype=numeric(1000,0)
+    address Address sqltype=varchar(256)
+    nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
-    contractRoot SHAPtr
-    codeHash SHA
+    contractRoot SHAPtr sqltype=varchar(256)
+    codeHash SHA sqltype=varchar(256)
     deriving Show Read Eq
 
 RawTransaction json
-    from Address
+    fromAddress Address sqltype=varchar(256)
     nonce Integer sqltype=numeric(1000,0)
     gasPrice Integer sqltype=numeric(1000,0)
     gasLimit Integer sqltype=numeric(1000,0)
-    to Address Maybe
+    toAddress Address Maybe sqltype=varchar(256)
     value Integer sqltype=numeric(1000,0)
-    codeOrData B.ByteString
+    codeOrData BS.ByteString
     v Integer
     r Integer
     s Word8

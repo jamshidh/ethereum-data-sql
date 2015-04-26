@@ -23,6 +23,8 @@ import qualified Data.Text as T
 
 derivePersistField "Integer"
 derivePersistField "Transaction"
+derivePersistField "SHA"
+derivePersistField "SHAPtr"
 
 {-
 showHexFixed :: (Integral a, Show a) => Int -> a -> String
@@ -37,6 +39,7 @@ instance PersistField Integer where
 instance PersistFieldSql Integer where
   sqlType _ = SqlOther $ T.pack "char(66)" -- fixed length character string, stored inline
 -}
+{-
 instance PersistField SHAPtr where
   toPersistValue (SHAPtr s) = PersistByteString $ s
   fromPersistValue (PersistByteString s) = Right $ SHAPtr $ s
@@ -52,4 +55,4 @@ instance PersistField SHA where
 
 instance PersistFieldSql SHA where
   sqlType _ = SqlString
-
+-}

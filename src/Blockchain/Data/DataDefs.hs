@@ -32,7 +32,6 @@ import Database.Persist.Quasi
 
 import Data.Time
 import Data.Time.Clock.POSIX
-import Data.ByteString as B
 
 import Blockchain.Data.Address
 import Blockchain.Database.MerklePatricia
