@@ -60,7 +60,8 @@ library
                  , path-pieces
                  , ethereum-encryption
                  , ethereum-util
-		 
+                 , esqueleto
+
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants

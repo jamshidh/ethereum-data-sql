@@ -143,48 +143,7 @@ putBlockLite b = do
           SQL.insert $ blk2BlkDataRef b blkId
               where txList = blockReceiptTransactions b
 
-instance Format Block where
-  format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
-    CL.blue ("Block #" ++ show (blockDataNumber bd)) ++ " " ++
-    tab (show (pretty $ blockHash b) ++ "\n" ++
-         format bd ++
-         (if null receipts
-          then "        (no transactions)\n"
-          else tab (intercalate "\n    " (format <$> receipts))) ++
-         (if null uncles
-          then "        (no uncles)"
-          else tab ("Uncles:" ++ tab ("\n" ++ intercalate "\n    " (format <$> uncles)))))
-              
-instance RLPSerializable Block where
-  rlpDecode (RLPArray [bd, RLPArray transactionReceipts, RLPArray uncles]) =
-    Block (rlpDecode bd) (rlpDecode <$> transactionReceipts) (rlpDecode <$> uncles)
-  rlpDecode (RLPArray arr) = error ("rlpDecode for Block called on object with wrong amount of data, length arr = " ++ show arr)
-  rlpDecode x = error ("rlpDecode for Block called on non block object: " ++ show x)
 
-  rlpEncode Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
-    RLPArray [rlpEncode bd, RLPArray (rlpEncode <$> receipts), RLPArray $ rlpEncode <$> uncles]
-
-instance RLPSerializable BlockData where
-  rlpDecode (RLPArray [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15]) =
-    BlockData {
-      blockDataParentHash = rlpDecode v1,
-      blockDataUnclesHash = rlpDecode v2,
-      blockDataCoinbase = rlpDecode v3,
-      blockDataStateRoot = rlpDecode v4,
-      blockDataTransactionsRoot = rlpDecode v5,
-      blockDataReceiptsRoot = rlpDecode v6,
-      blockDataLogBloom = rlpDecode v7,
-      blockDataDifficulty = rlpDecode v8,
-      blockDataNumber = rlpDecode v9,
-      blockDataGasLimit = rlpDecode v10,
-      blockDataGasUsed = rlpDecode v11,
-      blockDataTimestamp = posixSecondsToUTCTime $ fromInteger $ rlpDecode v12,
-      blockDataExtraData = rlpDecode v13,
-      blockDataMixHash = rlpDecode v14,
-      blockDataNonce = bytesToWord64 $ B.unpack $ rlpDecode v15
-      }  
-  rlpDecode (RLPArray arr) = error ("Error in rlpDecode for Block: wrong number of items, expected 15, got " ++ show (length arr) ++ ", arr = " ++ show (pretty arr))
-  rlpDecode x = error ("rlp2BlockData called on non block object: " ++ show x)
 
 
   rlpEncode bd =

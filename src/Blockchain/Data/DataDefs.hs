@@ -11,18 +11,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE DeriveGeneric              #-}
     
-module Blockchain.Data.DataDefs (
-  BlockData (..),
-  BlockDataRef (..),
-  Block (..),
-  AddressState (..),
-  AddressStateRef (..),
-  RawTransaction (..),
-  Address (..),
-  SHA (..),
-  entityDefs,
-  migrateAll 
-  ) where
+module Blockchain.Data.DataDefs where
 
 import Database.Persist
 import Database.Persist.Types

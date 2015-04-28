@@ -11,8 +11,11 @@
 module Blockchain.DBM (
   DBs(..),
   DBM,
+  DBsLite(..),
+  DBMLite,
   setStateRoot,
   openDBs,
+  openDBsLite,
   DetailsDB,
   BlockDB
   ) where
@@ -57,7 +60,13 @@ data DBs =
     sqlDB::SQLDB
     }
 
+data DBsLite =
+  DBsLite {
+     sqlDBLite :: SQLDB
+     }
+
 type DBM = StateT DBs (ResourceT IO)
+type DBMLite = StateT DBsLite (ResourceT IO)
 
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
 
@@ -86,3 +95,9 @@ openDBs theType = do
       MPDB{ ldb=sdb, stateRoot=error "no stateRoot defined"}
       sdb
       sqldb
+
+openDBsLite :: SQL.ConnectionString -> ResourceT IO DBsLite
+openDBsLite connectionString = do
+  sqldb <- runNoLoggingT  $ SQL.createPostgresqlPool connectionString 20
+  SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
+  return $ DBsLite sqldb
