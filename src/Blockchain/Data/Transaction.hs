@@ -76,7 +76,7 @@ createMessageTX n gp gl to val theData prvKey = do
                      transactionS = 0,
                      transactionV = 0
                    }
-  let SHA theHash = hash $ rlpSerialize $ rlpEncode unsignedTX
+  let SHA theHash = hash $ rlpSerialize $ partialRLPEncode unsignedTX
   ExtendedSignature signature yIsOdd <- extSignMsg theHash prvKey
   return 
     unsignedTX {
