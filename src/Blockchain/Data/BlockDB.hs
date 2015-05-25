@@ -23,13 +23,15 @@ module Blockchain.Data.BlockDB (
   getBlockLite,
   putBlock,
   putBlockSql,
-  putBlockLite
+  putBlockLite,
+  rawTX2TX,
+  tx2RawTX
 ) where 
 
 import Database.Persist hiding (get)
 import Database.Persist.Types
 import Database.Persist.TH
-import Database.Persist.Postgresql as SQL hiding (get)
+import qualified Database.Persist.Postgresql as SQL
 import qualified Database.Esqueleto as E
 
 import qualified Crypto.Hash.SHA3 as C
@@ -67,16 +69,77 @@ import Blockchain.Data.Code
 import Control.Monad.State
 import Control.Monad.Trans.Resource
 
+rawTX2TX :: RawTransaction -> Transaction
+rawTX2TX (RawTransaction from nonce gp gl (Just to) val dat r s v _ _ _) = (MessageTX nonce gp gl to val dat r s v)
+rawTX2TX (RawTransaction from nonce gp gl Nothing val init r s v _ _ _) = (ContractCreationTX nonce gp gl val (Code init) r s v)
 
 -- tx2RawTX :: Transaction -> BlockId -> RawTransaction
-tx2RawTX tx blkId =
+tx2RawTX tx blkId blkNum =
   case tx of
-    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId)
-    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId)
+    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId blkNum (hash $ rlpSerialize $ rlpEncode tx))
+    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId blkNum (hash $ rlpSerialize $ rlpEncode tx))
     _ -> error "couldn't convert Transaction to RawTransaction"      
 
+
+calcTotalDifficulty :: Block -> BlockId -> DBM Integer
+calcTotalDifficulty b bid = do
+  ctx <- get
+  let bd = blockBlockData b
+
+  parent <- runResourceT $
+     SQL.runSqlPool (getParent (blockDataParentHash bd)) $ sqlDB ctx
+  case parent of
+    Nothing ->
+      case (blockDataNumber bd) of
+        0 -> return (blockDataDifficulty bd)
+        _ ->  error "couldn't find parent to calculate difficulty"
+    Just p -> return $ (blockDataRefTotalDifficulty . entityVal $ p) + (blockDataDifficulty bd)
+     
+  where getParent h = do
+          SQL.selectFirst [ BlockDataRefHash SQL.==. h ] []
+
+calcTotalDifficultyLite :: Block -> BlockId -> DBMLite Integer
+calcTotalDifficultyLite b bid = do
+  ctx <- get
+  let bd = blockBlockData b
+
+  parent <- runResourceT $
+     SQL.runSqlPool (getParent (blockDataParentHash bd)) $ sqlDBLite ctx
+  case parent of
+    Nothing ->
+      case (blockDataNumber bd) of
+        0 -> return (blockDataDifficulty bd)
+        _ ->  error "couldn't find parent to calculate difficulty"
+    Just p -> return $ (blockDataRefTotalDifficulty . entityVal $ p) + (blockDataDifficulty bd)
+     
+  where getParent h = do
+          SQL.selectFirst [ BlockDataRefHash SQL.==. h ] []
+
 -- blk2BlkDataRef :: Block -> BlockId ->  BlockDataRef
-blk2BlkDataRef b blkId = (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b)) --- Horrible! Apparently I need to learn the Lens library, yesterday
+blk2BlkDataRef b blkId = do
+  difficulty <- calcTotalDifficulty b blkId
+  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
+  where
+      bd = (blockBlockData b)
+      pH = blockDataParentHash bd
+      uH = blockDataUnclesHash bd
+      cB = blockDataCoinbase bd
+      sR = blockDataStateRoot bd
+      tR = blockDataTransactionsRoot bd
+      rR = blockDataReceiptsRoot bd
+      lB = blockDataLogBloom bd
+      n =  blockDataNumber bd
+      d  = blockDataDifficulty bd
+      gL = blockDataGasLimit bd
+      gU = blockDataGasUsed bd
+      t  = blockDataTimestamp bd
+      eD = blockDataExtraData bd
+      nc = blockDataNonce bd
+      mH = blockDataMixHash bd
+      
+blk2BlkDataRefLite b blkId = do
+  difficulty <- calcTotalDifficultyLite b blkId
+  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
   where
       bd = (blockBlockData b)
       pH = blockDataParentHash bd
@@ -124,24 +187,28 @@ putBlock b = do
 putBlockSql ::Block->DBM (Key BlockDataRef)
 putBlockSql b = do
   ctx <- get
+  
   runResourceT $
     SQL.runSqlPool actions $ sqlDB $ ctx 
   where actions = do
           blkId <- SQL.insert $ b                      
-          mapM_ SQL.insert (map (\tx -> tx2RawTX tx blkId)  (blockReceiptTransactions b))
-          SQL.insert $ blk2BlkDataRef b blkId
-              where txList = blockReceiptTransactions b
+          toInsert <- lift $ lift $ blk2BlkDataRef b blkId
+          mapM_ SQL.insert (map (\tx -> tx2RawTX tx blkId (blockDataNumber (blockBlockData b)))  (blockReceiptTransactions b))
+          SQL.insert $ toInsert
+
 
 putBlockLite ::Block->DBMLite (Key BlockDataRef)
 putBlockLite b = do
   ctx <- get
+  
   runResourceT $
     SQL.runSqlPool actions $ sqlDBLite $ ctx 
   where actions = do
           blkId <- SQL.insert $ b                      
-          mapM_ SQL.insert (map (\tx -> tx2RawTX tx blkId)  (blockReceiptTransactions b))
-          SQL.insert $ blk2BlkDataRef b blkId
-              where txList = blockReceiptTransactions b
+          toInsert <- lift $ lift $ blk2BlkDataRefLite b blkId
+          mapM_ SQL.insert (map (\tx -> tx2RawTX tx blkId (blockDataNumber (blockBlockData b))) (blockReceiptTransactions b))
+          SQL.insert $ toInsert
+
 
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =

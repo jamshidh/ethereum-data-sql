@@ -19,6 +19,9 @@ import Database.Persist.TH
 import Database.Persist.Postgresql
 import Database.Persist.Quasi
 
+import Crypto.Types.PubKey.ECC
+import Data.Text
+
 import Data.Time
 import Data.Time.Clock.POSIX
 

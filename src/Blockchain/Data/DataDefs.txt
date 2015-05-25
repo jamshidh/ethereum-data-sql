@@ -34,6 +34,8 @@ BlockDataRef json
     mixHash SHA
     blockId BlockId
     hash SHA
+    isConfirmed Bool
+    totalDifficulty Integer sqltype=numeric(1000,0)
     deriving Show Read Eq
 
 Block json
@@ -69,4 +71,22 @@ RawTransaction json
     r Integer
     s Word8
     blockId BlockId
+    blockNumber Integer
+    txHash SHA sqltype=varchar(256)
     deriving Show Read Eq    
+
+NeededBlockHashes json
+    hash SHA sqltype=varchar(256)
+    blockId BlockId
+
+PPeer json
+    peerId Point sqltype=varchar(512)
+    ip Text
+    port Int
+    numSessions Int
+    lastMsg Text
+    lastMsgTime UTCTime
+    lastTotalDifficulty Integer
+    lastBestBlockHash SHA
+    version Text
+

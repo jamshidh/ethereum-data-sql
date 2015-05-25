@@ -61,7 +61,8 @@ library
                  , ethereum-encryption
                  , ethereum-util
                  , esqueleto
-
+                 , crypto-pubkey-types
+		 
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants

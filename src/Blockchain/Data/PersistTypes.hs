@@ -18,13 +18,14 @@ import Control.Applicative
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
-
+import Crypto.Types.PubKey.ECC
 -- these derived instances may later change
 
 derivePersistField "Integer"
 derivePersistField "Transaction"
 derivePersistField "SHA"
 derivePersistField "SHAPtr"
+derivePersistField "Point"
 
 {-
 showHexFixed :: (Integral a, Show a) => Int -> a -> String
