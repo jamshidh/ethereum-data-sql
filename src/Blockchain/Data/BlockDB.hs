@@ -76,8 +76,8 @@ rawTX2TX (RawTransaction from nonce gp gl Nothing val init r s v _ _ _) = (Contr
 -- tx2RawTX :: Transaction -> BlockId -> RawTransaction
 tx2RawTX tx blkId blkNum =
   case tx of
-    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId blkNum (hash $ rlpSerialize $ rlpEncode tx))
-    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId blkNum (hash $ rlpSerialize $ rlpEncode tx))
+    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
+    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
     _ -> error "couldn't convert Transaction to RawTransaction"      
 
 
@@ -118,7 +118,7 @@ calcTotalDifficultyLite b bid = do
 -- blk2BlkDataRef :: Block -> BlockId ->  BlockDataRef
 blk2BlkDataRef b blkId = do
   difficulty <- calcTotalDifficulty b blkId
-  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
+  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
   where
       bd = (blockBlockData b)
       pH = blockDataParentHash bd
@@ -139,7 +139,7 @@ blk2BlkDataRef b blkId = do
       
 blk2BlkDataRefLite b blkId = do
   difficulty <- calcTotalDifficultyLite b blkId
-  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
+  return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
   where
       bd = (blockBlockData b)
       pH = blockDataParentHash bd
@@ -162,7 +162,6 @@ blk2BlkDataRefLite b blkId = do
 getBlock::SHA->DBM (Maybe Block)
 getBlock h = 
   fmap (rlpDecode . rlpDeserialize) <$> blockDBGet (BL.toStrict $ encode h)
-
 
 getBlockLite :: SHA->DBMLite (Maybe Block)
 getBlockLite h = do
