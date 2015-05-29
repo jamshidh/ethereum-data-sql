@@ -11,7 +11,8 @@ module Blockchain.ExtDBs (
   stateDBPut,
   stateDBGet,
   putKeyVal,
-  getKeyVals,
+  getKeyVal,
+  getAllKeyVals,
   keyExists,
   deleteKey
   ) where
@@ -24,17 +25,16 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Default
 import qualified Database.LevelDB as DB
 import Network.Haskoin.Internals
---import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import qualified Data.NibbleString as N
 import Blockchain.Data.RLP
 import qualified Blockchain.Database.MerklePatricia as MP
+import qualified Blockchain.Database.MerklePatricia.Internal as MPI
 import Blockchain.SHA
 import Blockchain.Util
 
 import Blockchain.DBM
 
---import Debug.Trace
 
 detailsDBPut::B.ByteString->B.ByteString->DBM ()
 detailsDBPut key val = do
@@ -86,7 +86,6 @@ stateDBGet key = do
   ctx <- get
   runResourceT $ 
     DB.get (MP.ldb $ stateDB ctx) def key
-    
 
 putKeyVal::N.NibbleString->RLPObject->DBM ()
 putKeyVal key val = do
@@ -95,10 +94,17 @@ putKeyVal key val = do
     liftIO $ runResourceT $ MP.putKeyVal (stateDB ctx) key val
   put ctx{stateDB=newStateDB}
 
-getKeyVals::N.NibbleString->DBM [(N.NibbleString, RLPObject)]
-getKeyVals key = do
+getAllKeyVals::DBM [(N.NibbleString, RLPObject)]
+getAllKeyVals = do
   ctx <- get
-  liftIO $ runResourceT $ MP.getKeyVals (stateDB ctx) key
+  let db = stateDB ctx
+  liftIO $ runResourceT $ MPI.unsafeGetAllKeyVals db
+
+getKeyVal::N.NibbleString -> DBM (Maybe RLPObject)
+getKeyVal key = do
+  ctx <- get
+  let db = stateDB ctx
+  liftIO $ runResourceT $ MP.getKeyVal db key
 
 deleteKey::N.NibbleString->DBM ()
 deleteKey key = do

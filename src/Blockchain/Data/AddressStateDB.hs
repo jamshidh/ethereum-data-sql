@@ -96,19 +96,24 @@ addressAsNibbleString (Address s) = N.EvenNibbleString $ BL.toStrict $ encode s
 
 getAddressState::Address->DBM AddressState
 getAddressState address = do
-  states <- getKeyVals $ addressAsNibbleString address
-  case states of
-    [] -> do
-      putAddressState address blankAddressState
-      return blankAddressState
-    [state] -> return $ rlpDecode $ rlpDeserialize $ rlpDecode $ snd state
-    _ -> error ("getAddressStates found multiple states for: " ++ show (pretty address) ++ "\n" ++ intercalate "\n" (show . pretty <$> states))
-  
+    states <- getKeyVal $ addressAsNibbleString address
+    return $ maybe blankAddressState (rlpDecode . rlpDeserialize . rlpDecode) states
+        
 
-getAllAddressStates::DBM [(N.NibbleString, AddressState)]
+
+nibbleString2ByteString::N.NibbleString->B.ByteString
+nibbleString2ByteString (N.EvenNibbleString str) = str
+nibbleString2ByteString (N.OddNibbleString c str) = c `B.cons` str
+
+getAllAddressStates::DBM [(Address, AddressState)]
 getAllAddressStates = do
-  states <- getKeyVals ""
-  return $ fmap (rlpDecode . rlpDeserialize . rlpDecode) <$> states
+    states <- getAllKeyVals
+    return $ map convert $ states
+    where
+      convert::(N.NibbleString, RLPObject)->(Address, AddressState)
+      convert (k, v) = (Address $ fromInteger $ byteString2Integer $ nibbleString2ByteString k, rlpDecode . rlpDeserialize . rlpDecode $ v)
+
+                                   
 
 putAddressState::Address->AddressState->DBM ()
 putAddressState address newState =
