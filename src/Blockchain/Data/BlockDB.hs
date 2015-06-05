@@ -179,7 +179,7 @@ getBlockLite h = do
 
 putBlock::Block->DBM ()
 putBlock b = do
-  notUsed <- putBlockSql b
+  _ <- putBlockSql b
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
 

@@ -56,7 +56,7 @@ AddressStateRef json
     nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr sqltype=varchar(256)
-    codeHash SHA sqltype=varchar(256)
+    code BS.ByteString
     deriving Show Read Eq
 
 RawTransaction json
@@ -90,3 +90,7 @@ PPeer json
     lastBestBlockHash SHA
     version Text
 
+Storage json
+    addressStateRefId AddressStateRefId
+    key Word256
+    value Word256

@@ -13,6 +13,8 @@ CREATE INDEX CONCURRENTLY ON address_state_ref (address);
 CREATE INDEX CONCURRENTLY ON raw_transaction (from_address);
 CREATE INDEX CONCURRENTLY ON raw_transaction (to_address);
 CREATE INDEX CONCURRENTLY ON raw_transaction (block_id);
+
+CREATE INDEX CONCURRENTLY ON storage (key);
  
 
 

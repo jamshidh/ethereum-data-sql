@@ -15,7 +15,10 @@ module Blockchain.Data.Address (
   Address(..),
   prvKey2Address,
   pubKey2Address,
-  getNewAddress_unsafe
+  getNewAddress_unsafe,
+  addressAsNibbleString,
+  addressFromNibbleString,
+  formatAddressWithoutColor
   ) where
 
 import Control.Monad
@@ -26,6 +29,7 @@ import Data.Binary
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC
+import qualified Data.NibbleString as N
 import Data.Maybe
 import Network.Haskoin.Crypto hiding (Address)
 import Network.Haskoin.Internals hiding (Address)
@@ -115,3 +119,13 @@ getNewAddress_unsafe a n =
     let theHash = hash $ rlpSerialize $ RLPArray [rlpEncode a, rlpEncode n]
     in decode $ BL.drop 12 $ encode theHash
 
+
+addressAsNibbleString::Address->N.NibbleString
+addressAsNibbleString (Address s) =
+  byteString2NibbleString $ BL.toStrict $ encode s
+
+addressFromNibbleString::N.NibbleString->Address
+addressFromNibbleString = Address . decode . BL.fromStrict . nibbleString2ByteString 
+
+formatAddressWithoutColor::Address->String
+formatAddressWithoutColor (Address x) = padZeros 40 $ showHex x ""
