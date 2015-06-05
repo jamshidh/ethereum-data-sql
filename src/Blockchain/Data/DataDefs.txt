@@ -90,3 +90,7 @@ PPeer json
     lastBestBlockHash SHA
     version Text
 
+Storage json
+    addressStateRefId AddressStateRefId
+    key Word256
+    value Word256

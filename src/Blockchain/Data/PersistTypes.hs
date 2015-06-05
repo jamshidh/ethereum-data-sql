@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Blockchain.Data.PersistTypes where
 
@@ -26,6 +27,7 @@ derivePersistField "Transaction"
 derivePersistField "SHA"
 derivePersistField "SHAPtr"
 derivePersistField "Point"
+derivePersistField "Word256"
 
 {-
 showHexFixed :: (Integral a, Show a) => Int -> a -> String

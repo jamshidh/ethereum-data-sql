@@ -75,6 +75,7 @@ library
                    Blockchain.Data.TransactionReceipt
                    Blockchain.DB.CodeDB
                    Blockchain.ExtDBs
+                   Blockchain.Data.DiffDB
                    Blockchain.Data.BlockDB
                    Blockchain.Data.AddressStateDB
                    Blockchain.Data.RawTransaction

@@ -10,6 +10,8 @@ module Blockchain.ExtDBs (
   codeDBPut,
   stateDBPut,
   stateDBGet,
+  hashDBPut,
+  hashDBGet,
   putKeyVal,
   getKeyVal,
   getAllKeyVals,
@@ -34,7 +36,6 @@ import Blockchain.SHA
 import Blockchain.Util
 
 import Blockchain.DBM
-
 
 detailsDBPut::B.ByteString->B.ByteString->DBM ()
 detailsDBPut key val = do
@@ -73,7 +74,21 @@ codeDBGet key = do
   ctx <- get
   runResourceT $ 
     DB.get (codeDB ctx) def key
-    
+
+hashDBPut::N.NibbleString->DBM ()
+hashDBPut unsafeKey = do
+  ctx <- get
+  runResourceT $ 
+    DB.put (hashDB ctx) def
+    (nibbleString2ByteString $ MPI.keyToSafeKey unsafeKey)
+    (nibbleString2ByteString unsafeKey)
+
+hashDBGet::N.NibbleString->DBM (Maybe N.NibbleString)
+hashDBGet key = do
+  ctx <- get
+  liftM (fmap byteString2NibbleString) $
+    runResourceT $ DB.get (hashDB ctx) def (nibbleString2ByteString key)
+
 stateDBPut::B.ByteString->B.ByteString->DBM ()
 stateDBPut key val = do
   ctx <- get
