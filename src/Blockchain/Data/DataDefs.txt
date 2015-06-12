@@ -58,6 +58,8 @@ AddressStateRef json
     balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr sqltype=varchar(256)
     code BS.ByteString
+    latestBlockDataRefId BlockDataRefId
+    latestBlockDataRefNumber Integer
     deriving Show Read Eq
 
 RawTransaction json
