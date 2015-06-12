@@ -95,3 +95,4 @@ Storage json
     addressStateRefId AddressStateRefId
     key Word256
     value Word256
+    deriving Show Read Eq
