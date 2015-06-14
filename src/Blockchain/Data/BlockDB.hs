@@ -177,11 +177,12 @@ getBlockLite h = do
                                    E.where_ ( (bdRef E.^. BlockDataRefHash E.==. E.val h ) E.&&. ( bdRef E.^. BlockDataRefBlockId E.==. block E.^. BlockId ))
                                    return block                        
 
-putBlock::Block->DBM ()
+putBlock::Block->DBM (Key BlockDataRef)
 putBlock b = do
-  notUsed <- putBlockSql b
+  blkDataId <- putBlockSql b
   let bytes = rlpSerialize $ rlpEncode b
   blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
+  return blkDataId
 
 
 putBlockSql ::Block->DBM (Key BlockDataRef)

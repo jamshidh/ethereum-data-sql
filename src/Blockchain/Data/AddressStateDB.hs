@@ -17,7 +17,9 @@ module Blockchain.Data.AddressStateDB (
   getAllAddressStates,
   putAddressState,
   deleteAddressState,
-  addressStateExists
+  addressStateExists,
+  getAddressFromHash,
+  getStorageKeyFromHash
 ) where 
 
 
@@ -32,6 +34,7 @@ import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 
 import Blockchain.ExtDBs
+import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
 import Blockchain.SHA
@@ -50,16 +53,10 @@ import qualified Data.ByteString as B
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
-import qualified Control.Monad.State as ST
+import Control.Monad.State as ST
 import Control.Monad.Trans.Resource
        
 import qualified Data.NibbleString as N
-
-{-
-share [ mkPersist sqlSettings ]
-    DD.entityDefs
--}
-
 
 blankAddressState:: AddressState
 blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=emptyTriePtr, addressStateCodeHash=hash "" }
@@ -73,7 +70,6 @@ instance Format AddressState where
                  "\ncodeHash: " ++ show (pretty $ addressStateCodeHash a))
   
 instance RLPSerializable AddressState where
-  --rlpEncode a | balance a < 0 = rlpEncode a{balance = - balance a}
   rlpEncode a | addressStateBalance a < 0 = error $ "Error in cal to rlpEncode for AddressState: AddressState has negative balance: " ++ format a
   rlpEncode a = RLPArray [
     rlpEncode $ toInteger $ addressStateNonce a,
@@ -91,20 +87,17 @@ instance RLPSerializable AddressState where
       } 
   rlpDecode x = error $ "Missing case in rlpDecode for AddressState: " ++ show (pretty x)
 
-addressAsNibbleString::Address->N.NibbleString
-addressAsNibbleString (Address s) = N.EvenNibbleString $ BL.toStrict $ encode s
-
 getAddressState::Address->DBM AddressState
 getAddressState address = do
     states <- getKeyVal $ addressAsNibbleString address
-    return $ maybe blankAddressState (rlpDecode . rlpDeserialize . rlpDecode) states
+    case states of
+      Nothing -> do
+        -- Querying an absent state counts as initializing it.
+        putAddressState address b
+        return b
+        where b = blankAddressState
+      Just s -> return $ (rlpDecode . rlpDeserialize . rlpDecode) s
         
-
-
-nibbleString2ByteString::N.NibbleString->B.ByteString
-nibbleString2ByteString (N.EvenNibbleString str) = str
-nibbleString2ByteString (N.OddNibbleString c str) = c `B.cons` str
-
 getAllAddressStates::DBM [(Address, AddressState)]
 getAllAddressStates = do
     states <- getAllKeyVals
@@ -113,13 +106,19 @@ getAllAddressStates = do
       convert::(N.NibbleString, RLPObject)->(Address, AddressState)
       convert (k, v) = (Address $ fromInteger $ byteString2Integer $ nibbleString2ByteString k, rlpDecode . rlpDeserialize . rlpDecode $ v)
 
-                                   
+getAddressFromHash :: N.NibbleString -> DBM (Maybe Address)
+getAddressFromHash =
+  liftM (fmap addressFromNibbleString) . hashDBGet
+
+getStorageKeyFromHash :: N.NibbleString -> DBM (Maybe Word256)
+getStorageKeyFromHash  =
+  liftM (fmap (decode . BL.fromStrict . nibbleString2ByteString) ) . hashDBGet  
 
 putAddressState::Address->AddressState->DBM ()
-putAddressState address newState =
-  do
-     notused <- putAddressStateSql address newState
-     putKeyVal (addressAsNibbleString address) $ rlpEncode $ rlpSerialize $ rlpEncode newState
+putAddressState address newState = do
+  hashDBPut addrNibbles
+  putKeyVal addrNibbles $ rlpEncode $ rlpSerialize $ rlpEncode newState
+  where addrNibbles = addressAsNibbleString address
 
 deleteAddressState::Address->DBM ()
 deleteAddressState address = 
@@ -128,24 +127,3 @@ deleteAddressState address =
 addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
-
-putAddressStateSql ::Address -> AddressState -> DBM (Key AddressStateRef )
-putAddressStateSql addr state = do
-  ctx <- ST.get
-  runResourceT $
-    SQL.runSqlPool actions $ sqlDB $ ctx
-  where actions = do
-   {-         oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
-            case oldAddressStateId of
-              (Just oaId) -> SQL.replace (entityKey $ oaId) $ aRef
-              _ -> SQL.insert_ $ aRef
-    -}
-            SQL.insert $ aRef
-          
-        aRef = AddressStateRef addr nonce bal cRoot cHash
-        nonce = addressStateNonce (state)
-        bal = addressStateBalance (state)
-        cRoot = addressStateContractRoot (state)
-        cHash = addressStateCodeHash (state)
-
-  

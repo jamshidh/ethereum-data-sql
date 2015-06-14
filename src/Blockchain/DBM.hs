@@ -48,6 +48,7 @@ import Blockchain.Data.Code
 type BlockDB = DB.DB
 type CodeDB = DB.DB
 type DetailsDB = DB.DB
+type HashDB = DB.DB
 type SQLDB = SQL.ConnectionPool
   
 
@@ -57,6 +58,7 @@ data DBs =
     detailsDB::DetailsDB,
     stateDB::MPDB,
     codeDB::CodeDB,
+    hashDB::HashDB,
     sqlDB::SQLDB
     }
 
@@ -93,6 +95,7 @@ openDBs theType = do
       bdb
       ddb
       MPDB{ ldb=sdb, stateRoot=error "no stateRoot defined"}
+      sdb
       sdb
       sqldb
 
