@@ -34,6 +34,7 @@ BlockDataRef json
     mixHash SHA
     blockId BlockId
     hash SHA
+    powVerified Bool
     isConfirmed Bool
     totalDifficulty Integer sqltype=numeric(1000,0)
     deriving Show Read Eq
@@ -56,7 +57,9 @@ AddressStateRef json
     nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr sqltype=varchar(256)
-    codeHash SHA sqltype=varchar(256)
+    code BS.ByteString
+    latestBlockDataRefId BlockDataRefId
+    latestBlockDataRefNumber Integer
     deriving Show Read Eq
 
 RawTransaction json
@@ -67,11 +70,11 @@ RawTransaction json
     toAddress Address Maybe sqltype=varchar(256)
     value Integer sqltype=numeric(1000,0)
     codeOrData BS.ByteString
-    v Integer
     r Integer
-    s Word8
+    s Integer
+    v Word8
     blockId BlockId
-    blockNumber Integer
+    blockNumber Int
     txHash SHA sqltype=varchar(256)
     deriving Show Read Eq    
 
@@ -94,3 +97,4 @@ Storage json
     addressStateRefId AddressStateRefId
     key Word256
     value Word256
+    deriving Show Read Eq

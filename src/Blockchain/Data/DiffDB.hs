@@ -12,6 +12,7 @@ import Blockchain.Data.Address
 import Blockchain.Data.AddressStateDB
 import Blockchain.Data.DataDefs
 import Blockchain.Data.RLP
+import Blockchain.DB.CodeDB
 import Blockchain.DBM
 import Blockchain.ExtWord
 import Blockchain.Util
@@ -22,17 +23,18 @@ import qualified Data.NibbleString as N
 
 type SqlDbM = SQL.SqlPersistT (ResourceT DBM)
 
-sqlDiff :: SHAPtr -> SHAPtr -> DBM ()
-sqlDiff oldAddrs newAddrs = do
+sqlDiff :: BlockDataRefId -> Integer -> SHAPtr -> SHAPtr -> DBM ()
+sqlDiff blkDataId blkNum oldAddrs newAddrs = do
   ctx <- ST.get
   diffAddrs <- lift $ dbDiff (stateDB ctx) oldAddrs newAddrs
-  runResourceT $ SQL.runSqlPool (mapM_ commitAddr diffAddrs) (sqlDB ctx)
+  runResourceT $ SQL.runSqlPool (mapM_ (commitAddr blkDataId blkNum) diffAddrs) (sqlDB ctx)
 
-commitAddr :: DiffOp -> SqlDbM ()
+commitAddr :: BlockDataRefId -> Integer -> DiffOp -> SqlDbM ()
 
-commitAddr Create{ key = nl, val = addrRLP } = do
+commitAddr blkDataId blkNum Create{ key = nl, val = addrRLP } = do
   Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
-  let aRef = AddressStateRef addr n b cr ch -- Should use Lens here, no doubt
+  Just code <- lift $ lift $ getCode ch
+  let aRef = AddressStateRef addr n b cr code blkDataId blkNum -- Should use Lens here, no doubt
   addrID <- SQL.insert aRef
   ctx <- lift $ lift ST.get
   addrStorageKVs <- lift $ lift $ lift $
@@ -47,16 +49,18 @@ commitAddr Create{ key = nl, val = addrRLP } = do
       return (realK, fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v)
     storageOfKV addrID = uncurry (Storage addrID)
 
-commitAddr Delete{ key = nl } = do
+commitAddr _ _ Delete{ key = nl } = do
   Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
   addrID <- getAddressStateSQL addr "delete"
   SQL.deleteWhere [ StorageAddressStateRefId SQL.==. addrID ]
   SQL.delete addrID
 
-commitAddr Diff.Update{ key = nl, oldVal = addrRLP1, newVal = addrRLP2 } = do
+commitAddr blkDataId blkNum Diff.Update{ key = nl, oldVal = addrRLP1, newVal = addrRLP2 } = do
   Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
   addrID <- getAddressStateSQL addr "update"
-  SQL.update addrID [ AddressStateRefNonce =. n, AddressStateRefBalance =. b ]
+  SQL.update addrID [ AddressStateRefNonce =. n, AddressStateRefBalance =. b,
+                      AddressStateRefLatestBlockDataRefId =. blkDataId,
+                      AddressStateRefLatestBlockDataRefNumber =. blkNum]
   ctx <- lift $ lift ST.get
   storageDiff <- lift $ lift $ lift $
                  dbDiff (stateDB ctx) oldAddrStorage newAddrStorage

@@ -127,24 +127,3 @@ deleteAddressState address =
 addressStateExists::Address->DBM Bool
 addressStateExists address = 
   keyExists (addressAsNibbleString address)
-
--- putAddressStateSql ::Address -> AddressState -> DBM (Key AddressStateRef )
--- putAddressStateSql addr state = do
---   ctx <- ST.get
---   runResourceT $
---     SQL.runSqlPool actions $ sqlDB $ ctx
---   where actions = do
---    {-         oldAddressStateId <- SQL.selectFirst [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
---             case oldAddressStateId of
---               (Just oaId) -> SQL.replace (entityKey $ oaId) $ aRef
---               _ -> SQL.insert_ $ aRef
---     -}
---             SQL.insert $ aRef
-          
---         aRef = AddressStateRef addr nonce bal cRoot cHash
---         nonce = addressStateNonce (state)
---         bal = addressStateBalance (state)
---         cRoot = addressStateContractRoot (state)
---         cHash = addressStateCodeHash (state)
-
-  
