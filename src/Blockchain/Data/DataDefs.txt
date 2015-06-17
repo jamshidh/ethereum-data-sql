@@ -98,3 +98,9 @@ Storage json
     key Word256
     value Word256
     deriving Show Read Eq
+
+TransactionResult json
+    blockHash SHA sqltype=varchar(256)
+    transactionHash SHA sqltype=varchar(256)
+    message String
+    deriving Show

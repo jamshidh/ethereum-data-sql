@@ -25,7 +25,8 @@ module Blockchain.Data.Transaction (
   createContractCreationTX,
   isMessageTX,
   isContractCreationTX,
-  whoSignedThisTransaction
+  whoSignedThisTransaction,
+  transactionHash
   ) where
 
 import qualified Data.ByteString as B
@@ -243,3 +244,7 @@ instance RLPSerializable Transaction where
         ]
       where
         (RLPArray [n, gp, gl, toAddr, val, i]) = partialRLPEncode t
+
+
+transactionHash::Transaction->SHA
+transactionHash = hash . rlpSerialize . rlpEncode
