@@ -1,4 +1,9 @@
-module Blockchain.Data.DiffDB (sqlDiff) where
+module Blockchain.Data.DiffDB (
+  sqlDiff,
+  commitSqlDiffs,
+  AddrDiffOp(..),
+  StorageDiffOp(..)
+  ) where
 
 import Database.Persist hiding (get)
 import Database.Persist.Class
@@ -7,7 +12,7 @@ import Database.Persist.TH
 import qualified Database.Persist.Postgresql as SQL hiding (get)
 
 import Blockchain.Database.MerklePatricia.Internal
-import Blockchain.Database.MerklePatricia.Diff as Diff
+import qualified Blockchain.Database.MerklePatricia.Diff as Diff
 import Blockchain.Data.Address
 import Blockchain.Data.AddressStateDB
 import Blockchain.Data.DataDefs
@@ -17,22 +22,56 @@ import Blockchain.DBM
 import Blockchain.ExtWord
 import Blockchain.Util
 
-import Control.Monad.State as ST
+import Control.Monad.State as ST hiding (state)
 import Control.Monad.Trans.Resource
 import qualified Data.NibbleString as N
+
+--import Debug.Trace
 
 type SqlDbM = SQL.SqlPersistT (ResourceT DBM)
 
 sqlDiff :: BlockDataRefId -> Integer -> SHAPtr -> SHAPtr -> DBM ()
 sqlDiff blkDataId blkNum oldAddrs newAddrs = do
   ctx <- ST.get
-  diffAddrs <- lift $ dbDiff (stateDB ctx) oldAddrs newAddrs
+  kvs <- lift $ unsafeGetAllKeyVals $ stateDB ctx
+  diffAddrs <- addrDbDiff (stateDB ctx) oldAddrs newAddrs
+  commitSqlDiffs blkDataId blkNum diffAddrs
+
+commitSqlDiffs :: BlockDataRefId -> Integer -> [AddrDiffOp] -> DBM ()
+commitSqlDiffs blkDataId blkNum diffAddrs = do
+  ctx <- ST.get
   runResourceT $ SQL.runSqlPool (mapM_ (commitAddr blkDataId blkNum) diffAddrs) (sqlDB ctx)
 
-commitAddr :: BlockDataRefId -> Integer -> DiffOp -> SqlDbM ()
+data AddrDiffOp =
+  CreateAddr { addr :: Address, state :: AddressState } |
+  DeleteAddr { addr :: Address } |
+  UpdateAddr { addr :: Address, oldState :: AddressState, newState :: AddressState }
 
-commitAddr blkDataId blkNum Create{ key = nl, val = addrRLP } = do
-  Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
+addrDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [AddrDiffOp]
+addrDbDiff db ptr1 ptr2 = do
+  diffs <- lift $ Diff.dbDiff db ptr1 ptr2
+  mapM addrConvert diffs
+
+addrConvert :: Diff.DiffOp -> DBM AddrDiffOp
+
+addrConvert (Diff.Create k v) = do
+  Just k' <- getAddressFromHash (N.pack k)
+  let v' = rlpDecode $ rlpDeserialize $ rlpDecode v
+  return $ CreateAddr k' v'
+
+addrConvert (Diff.Delete k) = do
+  Just k' <- getAddressFromHash (N.pack k)
+  return $ DeleteAddr k'
+
+addrConvert (Diff.Update k v1 v2) = do
+  Just k' <- getAddressFromHash (N.pack k)
+  let v1' = rlpDecode $ rlpDeserialize $ rlpDecode v1
+      v2' = rlpDecode $ rlpDeserialize $ rlpDecode v2
+  return $ UpdateAddr k' v1' v2'
+
+commitAddr :: BlockDataRefId -> Integer -> AddrDiffOp -> SqlDbM ()
+
+commitAddr blkDataId blkNum CreateAddr{ addr = addr, state = addrS } = do
   Just code <- lift $ lift $ getCode ch
   let aRef = AddressStateRef addr n b cr code blkDataId blkNum -- Should use Lens here, no doubt
   addrID <- SQL.insert aRef
@@ -42,51 +81,68 @@ commitAddr blkDataId blkNum Create{ key = nl, val = addrRLP } = do
   realStorageKVs <- lift $ lift $ mapM decodeKV addrStorageKVs
   mapM_ (SQL.insert . storageOfKV addrID) realStorageKVs
   where
-    AddressState n b cr ch = rlpDecode $ rlpDeserialize $ rlpDecode addrRLP
+    AddressState n b cr ch = addrS
     addrStorageRoot = cr
-    decodeKV (k,v) = do
-      Just realK <- getStorageKeyFromHash k
-      return (realK, fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v)
-    storageOfKV addrID = uncurry (Storage addrID)
+    decodeKV (k,v) = storageConvert $ Diff.Create (N.unpack k) v
+    storageOfKV addrID (CreateStorage k v)= Storage addrID k v
 
-commitAddr _ _ Delete{ key = nl } = do
-  Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
+commitAddr _ _ DeleteAddr{ addr = addr } = do
   addrID <- getAddressStateSQL addr "delete"
   SQL.deleteWhere [ StorageAddressStateRefId SQL.==. addrID ]
   SQL.delete addrID
 
-commitAddr blkDataId blkNum Diff.Update{ key = nl, oldVal = addrRLP1, newVal = addrRLP2 } = do
-  Just addr <- lift $ lift $ getAddressFromHash (N.pack nl)
+commitAddr blkDataId blkNum UpdateAddr{ addr = addr, oldState = addrS1, newState = addrS2 } = do
   addrID <- getAddressStateSQL addr "update"
   SQL.update addrID [ AddressStateRefNonce =. n, AddressStateRefBalance =. b,
                       AddressStateRefLatestBlockDataRefId =. blkDataId,
                       AddressStateRefLatestBlockDataRefNumber =. blkNum]
   ctx <- lift $ lift ST.get
-  storageDiff <- lift $ lift $ lift $
-                 dbDiff (stateDB ctx) oldAddrStorage newAddrStorage
+  storageDiff <- lift $ lift $ storageDbDiff (stateDB ctx) oldAddrStorage newAddrStorage
   mapM_ (commitStorage addrID) storageDiff
   where
-    AddressState _ _ cr1 _ = rlpDecode $ rlpDeserialize $ rlpDecode addrRLP1
+    AddressState _ _ cr1 _ = addrS1
     oldAddrStorage = cr1
-    AddressState n b cr2 _ = rlpDecode $ rlpDeserialize $ rlpDecode addrRLP2
+    AddressState n b cr2 _ = addrS2
     newAddrStorage = cr2
 
-commitStorage :: SQL.Key AddressStateRef -> DiffOp -> SqlDbM ()
+data StorageDiffOp =
+  CreateStorage { key :: Word256, val :: Word256 } |
+  DeleteStorage { key :: Word256 } |
+  UpdateStorage { key :: Word256, oldVal :: Word256, newVal :: Word256 }
 
-commitStorage addrID Create{ key = nl, val = valRLP } = do
-  Just storageKey <- lift $ lift $ getStorageKeyFromHash $ N.pack nl
-  let storageVal = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode valRLP
+storageDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [StorageDiffOp]
+storageDbDiff db ptr1 ptr2 = do
+  diffs <- lift $ Diff.dbDiff db ptr2 ptr2
+  mapM storageConvert diffs
+
+storageConvert :: Diff.DiffOp -> DBM StorageDiffOp
+
+storageConvert (Diff.Create k v) = do
+  Just k' <- getStorageKeyFromHash $ N.pack k
+  let v' = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v
+  return $ CreateStorage k' v'
+
+storageConvert (Diff.Delete k) = do
+  Just k' <- getStorageKeyFromHash $ N.pack k
+  return $ DeleteStorage k'
+
+storageConvert (Diff.Update k v1 v2) = do
+  Just k' <- getStorageKeyFromHash $ N.pack k
+  let v1' = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v1
+      v2' = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v2
+  return $ UpdateStorage k' v1' v2'
+
+commitStorage :: SQL.Key AddressStateRef -> StorageDiffOp -> SqlDbM ()
+
+commitStorage addrID CreateStorage{ key = storageKey, val = storageVal } = do
   SQL.insert $ Storage addrID storageKey storageVal
   return ()
 
-commitStorage _ Delete{ key = nl } = do
-  Just storageKey <- lift $ lift $ getStorageKeyFromHash $ N.pack nl
+commitStorage _ DeleteStorage{ key = storageKey } = do
   storageID <- getStorageKeySQL storageKey "delete"
   SQL.delete storageID
 
-commitStorage _ Diff.Update{ key = nl, oldVal = _, newVal = valRLP } = do
-  Just storageKey <- lift $ lift $ getStorageKeyFromHash $ N.pack nl
-  let storageVal = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode valRLP
+commitStorage _ UpdateStorage{ key = storageKey, oldVal = _, newVal = storageVal} = do
   storageID <- getStorageKeySQL storageKey "update"
   SQL.update storageID [ StorageValue =. storageVal ]
   return ()

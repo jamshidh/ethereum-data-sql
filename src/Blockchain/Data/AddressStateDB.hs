@@ -99,12 +99,12 @@ getAddressState address = do
       Just s -> return $ (rlpDecode . rlpDeserialize . rlpDecode) s
         
 getAllAddressStates::DBM [(Address, AddressState)]
-getAllAddressStates = do
-    states <- getAllKeyVals
-    return $ map convert $ states
-    where
-      convert::(N.NibbleString, RLPObject)->(Address, AddressState)
-      convert (k, v) = (Address $ fromInteger $ byteString2Integer $ nibbleString2ByteString k, rlpDecode . rlpDeserialize . rlpDecode $ v)
+getAllAddressStates = mapM convert =<< getAllKeyVals
+  where
+    convert::(N.NibbleString, RLPObject)-> DBM (Address, AddressState)
+    convert (k, v) = do
+      Just k' <- getAddressFromHash k
+      return (k', rlpDecode . rlpDeserialize . rlpDecode $ v)
 
 getAddressFromHash :: N.NibbleString -> DBM (Maybe Address)
 getAddressFromHash =
