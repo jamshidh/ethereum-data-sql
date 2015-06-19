@@ -112,7 +112,7 @@ data StorageDiffOp =
 
 storageDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [StorageDiffOp]
 storageDbDiff db ptr1 ptr2 = do
-  diffs <- lift $ Diff.dbDiff db ptr2 ptr2
+  diffs <- lift $ Diff.dbDiff db ptr1 ptr2
   mapM storageConvert diffs
 
 storageConvert :: Diff.DiffOp -> DBM StorageDiffOp
