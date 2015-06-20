@@ -79,6 +79,7 @@ library
                    Blockchain.Data.BlockDB
                    Blockchain.Data.AddressStateDB
                    Blockchain.Data.RawTransaction
+                   Blockchain.Data.TransactionResult
                    Blockchain.Data.PersistTypes
                    Blockchain.Data.MiscJSON
 
