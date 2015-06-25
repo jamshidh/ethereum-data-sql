@@ -103,4 +103,5 @@ TransactionResult json
     blockHash SHA sqltype=varchar(256)
     transactionHash SHA sqltype=varchar(256)
     message String
+    details String
     deriving Show
