@@ -83,7 +83,7 @@ tx2RawTX tx blkId blkNum =
     _ -> error "couldn't convert Transaction to RawTransaction"      
 
 tx2RawTX' :: Transaction -> RawTransaction
-tx2RawTX' tx = tx2RawTX tx (E.toSqlKey 0) (-1)
+tx2RawTX' tx = tx2RawTX tx (E.toSqlKey 1) (-1)
 
 calcTotalDifficulty :: Block -> BlockId -> DBM Integer
 calcTotalDifficulty b bid = do
