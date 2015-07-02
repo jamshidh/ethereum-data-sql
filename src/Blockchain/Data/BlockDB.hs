@@ -26,7 +26,8 @@ module Blockchain.Data.BlockDB (
   putBlockSql,
   putBlockLite,
   rawTX2TX,
-  tx2RawTX
+  tx2RawTX,
+  tx2RawTX'
 ) where 
 
 import Database.Persist hiding (get)
@@ -81,6 +82,8 @@ tx2RawTX tx blkId blkNum =
     (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
     _ -> error "couldn't convert Transaction to RawTransaction"      
 
+tx2RawTX' :: Transaction -> RawTransaction
+tx2RawTX' tx = tx2RawTX tx (E.toSqlKey 0) (-1)
 
 calcTotalDifficulty :: Block -> BlockId -> DBM Integer
 calcTotalDifficulty b bid = do
