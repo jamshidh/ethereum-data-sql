@@ -26,7 +26,7 @@ import Control.Monad.State as ST hiding (state)
 import Control.Monad.Trans.Resource
 import qualified Data.NibbleString as N
 
---import Debug.Trace
+import Debug.Trace
 
 type SqlDbM = SQL.SqlPersistT (ResourceT DBM)
 
@@ -46,6 +46,7 @@ data AddrDiffOp =
   CreateAddr { addr :: Address, state :: AddressState } |
   DeleteAddr { addr :: Address } |
   UpdateAddr { addr :: Address, oldState :: AddressState, newState :: AddressState }
+  deriving (Show)
 
 addrDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [AddrDiffOp]
 addrDbDiff db ptr1 ptr2 = do
@@ -98,7 +99,7 @@ commitAddr blkDataId blkNum UpdateAddr{ addr = addr, oldState = addrS1, newState
                       AddressStateRefLatestBlockDataRefNumber =. blkNum]
   ctx <- lift $ lift ST.get
   storageDiff <- lift $ lift $ storageDbDiff (stateDB ctx) oldAddrStorage newAddrStorage
-  mapM_ (commitStorage addrID) storageDiff
+  mapM_ (commitStorage addrID) (trace ("Address " ++ formatAddressWithoutColor addr ++ ": " ++ show storageDiff) storageDiff)
   where
     AddressState _ _ cr1 _ = addrS1
     oldAddrStorage = cr1
@@ -109,6 +110,7 @@ data StorageDiffOp =
   CreateStorage { key :: Word256, val :: Word256 } |
   DeleteStorage { key :: Word256 } |
   UpdateStorage { key :: Word256, oldVal :: Word256, newVal :: Word256 }
+  deriving (Show)
 
 storageDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [StorageDiffOp]
 storageDbDiff db ptr1 ptr2 = do
@@ -138,12 +140,12 @@ commitStorage addrID CreateStorage{ key = storageKey, val = storageVal } = do
   SQL.insert $ Storage addrID storageKey storageVal
   return ()
 
-commitStorage _ DeleteStorage{ key = storageKey } = do
-  storageID <- getStorageKeySQL storageKey "delete"
+commitStorage addrID DeleteStorage{ key = storageKey } = do
+  storageID <- getStorageKeySQL addrID storageKey "delete"
   SQL.delete storageID
 
-commitStorage _ UpdateStorage{ key = storageKey, oldVal = _, newVal = storageVal} = do
-  storageID <- getStorageKeySQL storageKey "update"
+commitStorage addrID UpdateStorage{ key = storageKey, oldVal = _, newVal = storageVal} = do
+  storageID <- getStorageKeySQL addrID storageKey "update"
   SQL.update storageID [ StorageValue =. storageVal ]
   return ()
 
@@ -155,10 +157,11 @@ getAddressStateSQL addr s = do
     then error $ s ++ ": Address not found in SQL db: " ++ formatAddressWithoutColor addr
     else return $ head addrIDs
 
-getStorageKeySQL :: Word256 -> String -> SqlDbM (SQL.Key Storage)
-getStorageKeySQL storageKey s = do
+getStorageKeySQL :: (SQL.Key AddressStateRef) -> Word256 -> String -> SqlDbM (SQL.Key Storage)
+getStorageKeySQL addrID storageKey s = do
   storageIDs <- SQL.selectKeysList
-              [ StorageKey SQL.==. storageKey ] [ LimitTo 1 ]
+              [ StorageAddressStateRefId SQL.==. addrID, StorageKey SQL.==. storageKey ]
+              [ LimitTo 1 ]
   if null storageIDs
     then error $ s ++ ": Storage key not found in SQL db: " ++ showHex4 storageKey
     else return $ head storageIDs
