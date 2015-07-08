@@ -103,5 +103,12 @@ TransactionResult json
     blockHash SHA sqltype=varchar(256)
     transactionHash SHA sqltype=varchar(256)
     message String
-    details String
+    trace String
+    gasUsed Word256
+    etherUsed Word256
+    contractsCreated String
+    contractsDeleted String
+    time Double
+    newStorage String
+    deletedStorage String
     deriving Show
