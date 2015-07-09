@@ -50,6 +50,9 @@ import qualified Data.Aeson as AS
 import Data.Aeson.Types
        
 import GHC.Generics
+import qualified Blockchain.Colors as C
+import Blockchain.Format
+import Blockchain.SHA
 import Blockchain.SHA
 import Blockchain.Util
 import Web.PathPieces
@@ -81,6 +84,9 @@ instance AS.FromJSON Address where
    
 instance Pretty Address where
   pretty (Address x) = yellow $ text $ padZeros 40 $ showHex x ""
+
+instance Format Address where
+  format (Address x) = C.yellow $ padZeros 40 $ showHex x ""
 
 instance Binary Address where
   put (Address x) = sequence_ $ fmap put $ word160ToBytes $ fromIntegral x
