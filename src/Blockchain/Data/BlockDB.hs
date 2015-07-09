@@ -78,9 +78,12 @@ rawTX2TX (RawTransaction from nonce gp gl Nothing val init r s v _ _ _) = (Contr
 tx2RawTX :: Transaction -> (Key Block) -> Integer ->  RawTransaction
 tx2RawTX tx blkId blkNum =
   case tx of
-    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction (whoSignedThisTransaction tx) nonce gp gl (Just to) val dat r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
-    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction (whoSignedThisTransaction tx) nonce gp gl Nothing val init r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
+    (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction signer nonce gp gl (Just to) val dat r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
+    (ContractCreationTX nonce gp gl val (Code init) r s v) ->  (RawTransaction signer nonce gp gl Nothing val init r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
     _ -> error "couldn't convert Transaction to RawTransaction"      
+  where
+    signer = fromMaybe (Address (-1)) $ whoSignedThisTransaction tx
+
 
 tx2RawTX' :: Transaction -> RawTransaction
 tx2RawTX' tx = tx2RawTX tx (E.toSqlKey 1) (-1)

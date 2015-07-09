@@ -122,9 +122,9 @@ createContractCreationTX n gp gl val init' prvKey = do
 
 
 
-whoSignedThisTransaction::Transaction->Address
+whoSignedThisTransaction::Transaction->Maybe Address -- Signatures can be malformed, hence the Maybe
 whoSignedThisTransaction t = 
-    pubKey2Address (getPubKeyFromSignature xSignature theHash)
+    fmap pubKey2Address $ getPubKeyFromSignature xSignature theHash
         where
           xSignature = ExtendedSignature (Signature (fromInteger $ transactionR t) (fromInteger $ transactionS t)) (0x1c == transactionV t)
           SHA theHash = hash $ rlpSerialize $ partialRLPEncode t
