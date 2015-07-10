@@ -1,8 +1,8 @@
 module Blockchain.Data.DiffDB (
   sqlDiff,
   commitSqlDiffs,
-  AddrDiffOp(..),
-  StorageDiffOp(..)
+  AddrDiffOp(..), addrConvert, addrDbDiff,
+  StorageDiffOp(..), storageConvert, storageDbDiff
   ) where
 
 import Database.Persist hiding (get)
