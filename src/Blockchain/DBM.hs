@@ -14,6 +14,7 @@ module Blockchain.DBM (
   DBsLite(..),
   DBMLite,
   setStateRoot,
+  getStateRoot,
   openDBs,
   openDBsLite,
   DetailsDB,
@@ -76,6 +77,11 @@ setStateRoot::SHAPtr->DBM ()
 setStateRoot stateRoot' = do
   ctx <- get
   put ctx{stateDB=(stateDB ctx){stateRoot=stateRoot'}}
+
+getStateRoot::DBM SHAPtr
+getStateRoot = do
+  ctx <- get
+  return $ stateRoot $ stateDB ctx
 
 
 options::DB.Options
