@@ -62,7 +62,7 @@ library
                  , ethereum-util
                  , esqueleto
                  , crypto-pubkey-types
-		 
+      		 
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
@@ -82,6 +82,7 @@ library
                    Blockchain.Data.TransactionResult
                    Blockchain.Data.PersistTypes
                    Blockchain.Data.MiscJSON
+                   Blockchain.Data.Json
 
     C-sources: fastNonceFinder/nonceFinder.c
     ghc-options: -Wall -O2 -static

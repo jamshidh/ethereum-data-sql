@@ -1,4 +1,4 @@
-BlockData json
+BlockData
     parentHash SHA
     unclesHash SHA
     coinbase Address
@@ -16,7 +16,7 @@ BlockData json
     mixHash SHA
     deriving Show Read Eq
 
-BlockDataRef json
+BlockDataRef
     parentHash SHA
     unclesHash SHA
     coinbase Address
@@ -39,20 +39,20 @@ BlockDataRef json
     totalDifficulty Integer sqltype=numeric(1000,0)
     deriving Show Read Eq
 
-Block json
+Block 
     blockData BlockData
     receiptTransactions [Transaction]
     blockUncles [BlockData]
     deriving Show Read Eq
 
-AddressState json
+AddressState 
     nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
     contractRoot SHAPtr sqltype=varchar(256)
     codeHash SHA sqltype=varchar(256)
     deriving Show Read Eq
 
-AddressStateRef json
+AddressStateRef
     address Address sqltype=varchar(256)
     nonce Integer sqltype=numeric(100,0)
     balance Integer sqltype=numeric(1000,0)
@@ -62,7 +62,7 @@ AddressStateRef json
     latestBlockDataRefNumber Integer
     deriving Show Read Eq
 
-RawTransaction json
+RawTransaction 
     fromAddress Address sqltype=varchar(256)
     nonce Integer sqltype=numeric(1000,0)
     gasPrice Integer sqltype=numeric(1000,0)
@@ -78,11 +78,11 @@ RawTransaction json
     txHash SHA sqltype=varchar(256)
     deriving Show Read Eq    
 
-NeededBlockHashes json
+NeededBlockHashes 
     hash SHA sqltype=varchar(256)
     blockId BlockId
 
-PPeer json
+PPeer 
     peerId Point sqltype=varchar(512)
     ip Text
     port Int
