@@ -29,7 +29,7 @@ import Numeric
 
 derivePersistField "Transaction"
 
-integerCap = 2^17
+integerCap = 1000
 
 showHexFixed :: (Integral a, Show a) => Int -> a -> String
 showHexFixed len val = padZeros $ showHex val ""
