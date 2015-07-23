@@ -59,9 +59,6 @@ import Web.PathPieces
 
 newtype Address = Address Word160 deriving (Show, Eq, Read, Enum, Real, Bounded, Num, Ord, Generic, Integral)
 
-        
-derivePersistField "Address"
-
 {-
  Was necessary to make Address a primary key - which we no longer do (but rather index on the address field).
  May remove in the future

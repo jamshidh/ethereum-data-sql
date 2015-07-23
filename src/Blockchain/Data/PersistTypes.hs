@@ -9,12 +9,12 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import Database.Persist.Types
 
+import Blockchain.Data.Address
 import Blockchain.Data.Transaction
 import Blockchain.ExtWord
 import Blockchain.Util
 import Blockchain.SHA
 import Blockchain.Database.MerklePatricia
-
 
 import Control.Applicative
 
@@ -26,8 +26,10 @@ import Data.Text.Encoding
 import Blockchain.Handshake
 import Crypto.Types.PubKey.ECC
 import Numeric
+import Debug.Trace
 
 derivePersistField "Transaction"
+derivePersistField "Integer"
 
 integerCap = 1000
 
@@ -35,13 +37,25 @@ showHexFixed :: (Integral a, Show a) => Int -> a -> String
 showHexFixed len val = padZeros $ showHex val ""
     where padZeros s = if length s >= len then s else padZeros ('0' : s)
 
+instance PersistField Address where
+  toPersistValue (Address x) = PersistText . T.pack $ showHex  (fromIntegral $ x :: Integer) ""
+  fromPersistValue (PersistText t) = Right $ (Address wd160)
+    where
+      ((wd160, _):_) = readHex $ T.unpack $ t ::  [(Word160,String)]
+  fromPersistValue x = Left $ T.pack $ "PersistField Address: expected PersistText: " ++ (show x)
+
+instance PersistFieldSql Address where
+  sqlType _ = SqlOther $ T.pack "varchar(64)" 
+
+{-
 instance PersistField Integer where
   toPersistValue i = PersistText . T.pack $ show i
-  fromPersistValue (PersistText s) = Right $ read $ T.unpack s
-  fromPersistValue x = Left $ T.pack $ "PersistField Integer: expected integer: " ++ (show x)
+  fromPersistValue (PersistText s) = Right $ read $ T.unpack s -- 
+  fromPersistValue x = Left $ T.pack $ "PersistField Integer: expected PersistText: " ++ (show x)
 
 instance PersistFieldSql Integer where
   sqlType _ = SqlNumeric integerCap 0
+-}
 
 instance PersistField Word256 where
   toPersistValue i = PersistText . T.pack $ showHexFixed 64 (fromIntegral i :: Integer) 
@@ -64,6 +78,9 @@ instance PersistField Point where
   fromPersistValue (PersistText s) = Right . bytesToPoint . B.unpack . fst . B16.decode . encodeUtf8 $ s
   fromPersistValue _ = Left $ "Point must be persisted as PersistText"
 
+instance PersistFieldSql Point where
+  sqlType _ = SqlOther $ T.pack "varchar(64)" 
+
 instance PersistField SHA where
   toPersistValue (SHA i) = PersistText . T.pack $ showHexFixed 64 i
   fromPersistValue (PersistText s) = Right $ SHA $ (fromIntegral $ ((fst . head .  readHex $ T.unpack s) :: Integer) :: Word256)
@@ -72,5 +89,5 @@ instance PersistField SHA where
 instance PersistFieldSql SHA where
   sqlType _ = SqlOther $ T.pack "varchar(64)" 
 
--- maybe do better here
+
 

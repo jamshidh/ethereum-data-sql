@@ -25,7 +25,7 @@ BlockDataRef
     receiptsRoot SHAPtr
     logBloom BS.ByteString
     difficulty Integer sqltype=numeric(1000,0)
-    number Integer sqltype=bigint
+    number Integer sqltype=numeric(1000,0)
     gasLimit Integer sqltype=numeric(1000,0)
     gasUsed Integer sqltype=numeric(1000,0)
     timestamp UTCTime
@@ -46,28 +46,28 @@ Block
     deriving Show Read Eq
 
 AddressState 
-    nonce Integer sqltype=numeric(100,0)
+    nonce Integer sqltype=numeric(1000,0)
     balance Integer sqltype=numeric(1000,0)
-    contractRoot SHAPtr sqltype=varchar(256)
-    codeHash SHA sqltype=varchar(256)
+    contractRoot SHAPtr 
+    codeHash SHA 
     deriving Show Read Eq
 
 AddressStateRef
-    address Address sqltype=varchar(256)
-    nonce Integer sqltype=numeric(100,0)
+    address Address
+    nonce Integer sqltype=numeric(1000,0)
     balance Integer sqltype=numeric(1000,0)
-    contractRoot SHAPtr sqltype=varchar(256)
+    contractRoot SHAPtr
     code BS.ByteString
     latestBlockDataRefId BlockDataRefId
     latestBlockDataRefNumber Integer
     deriving Show Read Eq
 
 RawTransaction 
-    fromAddress Address sqltype=varchar(256)
+    fromAddress Address
     nonce Integer sqltype=numeric(1000,0)
     gasPrice Integer sqltype=numeric(1000,0)
     gasLimit Integer sqltype=numeric(1000,0)
-    toAddress Address Maybe sqltype=varchar(256)
+    toAddress Address Maybe 
     value Integer sqltype=numeric(1000,0)
     codeOrData BS.ByteString
     r Integer
@@ -75,15 +75,15 @@ RawTransaction
     v Word8
     blockId BlockId
     blockNumber Int
-    txHash SHA sqltype=varchar(256)
+    txHash SHA
     deriving Show Read Eq    
 
 NeededBlockHashes 
-    hash SHA sqltype=varchar(256)
+    hash SHA
     blockId BlockId
 
 PPeer 
-    peerId Point sqltype=varchar(512)
+    peerId Point
     ip Text
     port Int
     numSessions Int
@@ -100,8 +100,8 @@ Storage json
     deriving Show Read Eq
 
 TransactionResult json
-    blockHash SHA sqltype=varchar(256)
-    transactionHash SHA sqltype=varchar(256)
+    blockHash SHA
+    transactionHash SHA
     message String
     response String
     trace String
