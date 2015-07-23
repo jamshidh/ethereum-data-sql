@@ -30,12 +30,10 @@ import Debug.Trace
 import Data.Word
 import Data.Maybe
 
-
 jsonBlk :: (ToJSON a, Monad m) => a -> m Value
 jsonBlk a = return . toJSON $ a
 
 data RawTransaction' = RawTransaction' RawTransaction String deriving (Eq, Show)
-
 
 instance ToJSON RawTransaction' where
     toJSON (RawTransaction' rt@(RawTransaction (Address fa) non gp gl (Just (Address ta)) val cod r s v bid bn h) next) =

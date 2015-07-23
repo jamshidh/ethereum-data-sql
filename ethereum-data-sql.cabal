@@ -81,9 +81,9 @@ library
                    Blockchain.Data.RawTransaction
                    Blockchain.Data.TransactionResult
                    Blockchain.Data.PersistTypes
-                   Blockchain.Data.MiscJSON
                    Blockchain.Data.Json
-
+    other-modules:
+                   Blockchain.Data.MiscJSON
     C-sources: fastNonceFinder/nonceFinder.c
     ghc-options: -Wall -O2 -static
     extensions: TemplateHaskell
