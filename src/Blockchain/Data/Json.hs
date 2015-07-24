@@ -166,8 +166,8 @@ rtToRtPrime' x = RawTransaction' x ""
 data Transaction' = Transaction' Transaction deriving (Eq, Show)
 
 instance ToJSON Transaction' where
-    toJSON (Transaction' tx@(MessageTX tnon tgp tgl tto tval td tr ts tv)) = 
-        object ["kind" .= ("Transaction" :: String), "nonce" .= tnon, "gasPrice" .= tgp, "gasLimit" .= tgl, "to" .= tto, "value" .= tval,
+    toJSON (Transaction' tx@(MessageTX tnon tgp tgl (Address tto) tval td tr ts tv)) = 
+        object ["kind" .= ("Transaction" :: String), "nonce" .= tnon, "gasPrice" .= tgp, "gasLimit" .= tgl, "to" .= showHex tto "", "value" .= tval,
         "data" .= td, "r" .= showHex tr "", "s" .= showHex ts "", "v" .= showHex tv "",
         "transactionType" .= (show $ transactionSemantics $ tx)]
     toJSON (Transaction' tx@(ContractCreationTX tnon tgp tgl tval ti tr ts tv)) = 
