@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 
 module Blockchain.Data.TransactionResult (
      putTransactionResult
@@ -16,7 +17,8 @@ import Control.Monad.Trans.Resource
 import Blockchain.Data.DataDefs
 import Blockchain.DBM
 
-putTransactionResult::TransactionResult->DBM (Key TransactionResult)
+putTransactionResult::(HasSQLDB m, MonadIO m, MonadBaseControl IO m)=>
+                      TransactionResult->m (Key TransactionResult)
 putTransactionResult tr = do
-  ctx <- get
-  runResourceT $ SQL.runSqlPool (SQL.insert tr) $ sqlDB ctx 
+  pool <- getSQLDB
+  runResourceT $ SQL.runSqlPool (SQL.insert tr) pool

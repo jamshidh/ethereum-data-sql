@@ -64,12 +64,12 @@ type SQLDB = SQL.ConnectionPool
 
 data DBs =
   DBs {
-    blockDB::BlockDB,
-    detailsDB::DetailsDB,
+    blockDB'::BlockDB,
+    detailsDB'::DetailsDB,
     stateDB'::MPDB,
-    codeDB::CodeDB,
-    hashDB::HashDB,
-    sqlDB::SQLDB
+    codeDB'::CodeDB,
+    hashDB'::HashDB,
+    sqlDB'::SQLDB
     }
 
 data DBsLite =
