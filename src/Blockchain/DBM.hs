@@ -77,20 +77,20 @@ data DBsLite =
      sqlDBLite :: SQLDB
      }
 
-class Monad m=>HasBlockDB m where
+class MonadResource m=>HasBlockDB m where
   getBlockDB::Monad m=>m BlockDB
 
-class Monad m=>HasDetailsDB m where
+class MonadResource m=>HasDetailsDB m where
   getDetailsDB::Monad m=>m DetailsDB
 
 class MonadResource m=>HasStateDB m where
   getStateDB::Monad m=>m MPDB
   setStateDBStateRoot::Monad m=>SHAPtr->m ()
 
-class Monad m=>HasHashDB m where
+class MonadResource m=>HasHashDB m where
   getHashDB::Monad m=>m HashDB
 
-class Monad m=>HasCodeDB m where
+class MonadResource m=>HasCodeDB m where
   getCodeDB::Monad m=>m CodeDB
 
 class Monad m=>HasSQLDB m where
