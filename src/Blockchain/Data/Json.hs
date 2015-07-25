@@ -11,6 +11,8 @@ import Blockchain.Data.Address
 import Blockchain.Data.PersistTypes
 import Blockchain.Data.Transaction
 import Blockchain.Data.Code
+import Blockchain.SHA
+import Blockchain.Database.MerklePatricia
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as BL
@@ -29,11 +31,20 @@ import Debug.Trace
 
 import Data.Word
 import Data.Maybe
+import GHC.Generics
 
 jsonBlk :: (ToJSON a, Monad m) => a -> m Value
 jsonBlk a = return . toJSON $ a
 
 data RawTransaction' = RawTransaction' RawTransaction String deriving (Eq, Show)
+
+{- fix these later -}
+instance FromJSON Code
+instance ToJSON Code 
+
+instance ToJSON SHAPtr 
+instance FromJSON SHAPtr
+{- note we keep the file MiscJSON around for the instances we don't want to export - ByteString, Point -}
 
 instance ToJSON RawTransaction' where
     toJSON (RawTransaction' rt@(RawTransaction (Address fa) non gp gl (Just (Address ta)) val cod r s v bid bn h) next) =
@@ -167,15 +178,34 @@ data Transaction' = Transaction' Transaction deriving (Eq, Show)
 
 instance ToJSON Transaction' where
     toJSON (Transaction' tx@(MessageTX tnon tgp tgl (Address tto) tval td tr ts tv)) = 
-        object ["kind" .= ("Transaction" :: String), "nonce" .= tnon, "gasPrice" .= tgp, "gasLimit" .= tgl, "to" .= showHex tto "", "value" .= tval,
-        "data" .= td, "r" .= showHex tr "", "s" .= showHex ts "", "v" .= showHex tv "",
-        "transactionType" .= (show $ transactionSemantics $ tx)]
-    toJSON (Transaction' tx@(ContractCreationTX tnon tgp tgl tval ti tr ts tv)) = 
-        object ["kind" .= ("Transaction" :: String), "nonce" .= tnon, "gasPrice" .= tgp, "gasLimit" .= tgl, "value" .= tval, "init" .= ti,
-        "r" .= showHex tr "", "s" .= showHex ts "", "v" .= showHex tv "",
-        "transactionType" .= (show $ transactionSemantics $ tx)]
+        object ["kind" .= ("Transaction" :: String), 
+                "from" .= ((uncurry showHex) $ ((fromMaybe (Address 0) (whoSignedThisTransaction tx)),"")),
+                "nonce" .= tnon, 
+                "gasPrice" .= tgp, 
+                "gasLimit" .= tgl, 
+                "to" .= showHex tto "", 
+                "value" .= tval,
+                "data" .= td, 
+                "r" .= showHex tr "", 
+                "s" .= showHex ts "", 
+                "v" .= showHex tv "",
+                "hash" .= transactionHash tx,
+                "transactionType" .= (show $ transactionSemantics $ tx)]
+    toJSON (Transaction' tx@(ContractCreationTX tnon tgp tgl tval (Code ti) tr ts tv)) = 
+        object ["kind" .= ("Transaction" :: String), 
+                "from" .= ((uncurry showHex) $ ((fromMaybe (Address 0) (whoSignedThisTransaction tx)),"")),      
+                "nonce" .= tnon, 
+                "gasPrice" .= tgp, 
+                "gasLimit" .= tgl, 
+                "value" .= tval, 
+                "init" .= ti,
+                "r" .= showHex tr "", 
+                "s" .= showHex ts "", 
+                "v" .= showHex tv "",
+                "hash" .= transactionHash tx,
+                "transactionType" .= (show $ transactionSemantics $ tx)]
 
-
+{-- needs to be updated --}
 instance FromJSON Transaction' where
     parseJSON (Object t) = do
       tto <- (t .:? "to")
@@ -194,30 +224,36 @@ instance FromJSON Transaction' where
         (Just to) -> do
           td <- (t .: "data")
           return (Transaction' (MessageTX tnon tgp tgl to tval td tr ts tv))
-        
-{-        case res of
-          Nothing -> Transaction' ( ContractCreationTX <$>
-                     (t .: "nonce") <*>
-                     (t .: "gasPrice") <*>
-                     (t .: "gasLimit") <*>
-                     (t .: "value") <*>
-                     (t .: "init") <*>
-                     (t .: "r") <*>
-                     (t .: "s") <*>
-                     (t .: "v") 
-                    )
-          _ ->      Transaction' ( MessageTX <$>
-                     (t .: "nonce") <*>
-                     (t .: "gasPrice") <*>
-                     (t .: "gasLimit") <*>
-                     (t .: "to" ) <*>   
-                     (t .: "value") <*>
-                     (t .: "data") <*>
-                     (t .: "r") <*>
-                     (t .: "s") <*>
-                     (t .: "v") 
-                    )
--}
+
+
+instance ToJSON Transaction where
+    toJSON (tx@(MessageTX tnon tgp tgl (Address tto) tval td tr ts tv)) = 
+        object ["kind" .= ("Transaction" :: String), 
+                "from" .= ((uncurry showHex) $ ((fromMaybe (Address 0) (whoSignedThisTransaction tx)),"")),
+                "nonce" .= tnon, 
+                "gasPrice" .= tgp, 
+                "gasLimit" .= tgl, 
+                "to" .= showHex tto "", 
+                "value" .= tval,
+                "data" .= td, 
+                "r" .= showHex tr "", 
+                "s" .= showHex ts "", 
+                "v" .= showHex tv "",
+                "hash" .= transactionHash tx,
+                "transactionType" .= (show $ transactionSemantics $ tx)]
+    toJSON (tx@(ContractCreationTX tnon tgp tgl tval (Code ti) tr ts tv)) = 
+        object ["kind" .= ("Transaction" :: String), 
+                "from" .= ((uncurry showHex) $ ((fromMaybe (Address 0) (whoSignedThisTransaction tx)),"")),      
+                "nonce" .= tnon, 
+                "gasPrice" .= tgp, 
+                "gasLimit" .= tgl, 
+                "value" .= tval, 
+                "init" .= ti,
+                "r" .= showHex tr "", 
+                "s" .= showHex ts "", 
+                "v" .= showHex tv "",
+                "hash" .= transactionHash tx,
+                "transactionType" .= (show $ transactionSemantics $ tx)]
 
 tToTPrime :: Transaction -> Transaction'
 tToTPrime x = Transaction' x

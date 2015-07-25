@@ -121,7 +121,9 @@ createContractCreationTX n gp gl val init' prvKey = do
     }
 
 
-
+{-
+  Switch to Either?
+-}
 whoSignedThisTransaction::Transaction->Maybe Address -- Signatures can be malformed, hence the Maybe
 whoSignedThisTransaction t = 
     fmap pubKey2Address $ getPubKeyFromSignature xSignature theHash

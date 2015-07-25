@@ -68,7 +68,10 @@ instance PathPiece Address where
   fromPathPiece t = Just (Address wd160)
     where
       ((wd160, _):_) = readHex $ T.unpack $ t ::  [(Word160,String)]
-                   
+
+{-
+ make into a string rather than an object
+-}                   
 instance AS.ToJSON Address where
   toJSON (Address x) = AS.object [ "address" AS..= (showHex x "") ]
          
