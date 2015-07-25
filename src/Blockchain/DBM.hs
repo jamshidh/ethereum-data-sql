@@ -36,22 +36,15 @@ import qualified Database.LevelDB as DB
 import Control.Monad.IO.Class
 import Control.Monad.State
 import Control.Monad.Trans.Resource
-import qualified Data.ByteString as B
 import System.Directory
 import System.FilePath
---import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), (</>))
 
-import           Control.Monad.Logger    (runStderrLoggingT,runNoLoggingT)
-import qualified Database.Persist            as P
+import           Control.Monad.Logger    (runNoLoggingT)
 import qualified Database.Persist.Postgresql as SQL
-import           Database.Persist.TH
-import           Database.Persist.Types
 
 import Blockchain.Constants
 import Blockchain.Database.MerklePatricia
-import Blockchain.Data.Transaction
 import Blockchain.Data.DataDefs
-import Blockchain.Data.Code
 
 --import Debug.Trace
 
@@ -99,14 +92,8 @@ class Monad m=>HasSQLDB m where
 type DBM = StateT DBs (ResourceT IO)
 type DBMLite = StateT DBsLite (ResourceT IO)
 
+connStr::SQL.ConnectionString
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
-
-{-
-setStateRoot::HasStateDB m=>SHAPtr->m ()
-setStateRoot stateRoot' = do
-  ctx <- getStateDB
-  put ctx{stateDB=(stateDB ctx){stateRoot=stateRoot'}}
--}
 
 getStateRoot::HasStateDB m=>m SHAPtr
 getStateRoot = do
@@ -118,7 +105,7 @@ options::DB.Options
 options = DB.defaultOptions {
   DB.createIfMissing=True, DB.cacheSize=1024}
 
-openDBs::String->ResourceT IO DBs
+openDBs::(MonadResource m, MonadBaseControl IO m)=>String->m DBs
 openDBs theType = do
   homeDir <- liftIO getHomeDirectory                     
   liftIO $ createDirectoryIfMissing False $ homeDir </> dbDir theType
