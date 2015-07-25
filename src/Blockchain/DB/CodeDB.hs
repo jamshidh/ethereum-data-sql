@@ -4,6 +4,7 @@ module Blockchain.DB.CodeDB (
                getCode
               ) where
 
+import Control.Monad.Trans.Resource
 import Data.Binary
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
@@ -13,9 +14,9 @@ import Blockchain.ExtDBs
 import Blockchain.SHA
 import Blockchain.Database.MerklePatricia
 
-addCode::B.ByteString->DBM ()
+addCode::(HasCodeDB m, MonadResource m)=>B.ByteString->m ()
 addCode = codeDBPut
 
-getCode::SHA->DBM (Maybe B.ByteString)
+getCode::(HasCodeDB m, MonadResource m)=>SHA->m (Maybe B.ByteString)
 getCode theHash = 
   codeDBGet (BL.toStrict $ encode $ sha2SHAPtr theHash)

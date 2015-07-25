@@ -30,6 +30,7 @@ import Network.Haskoin.Internals
 
 import qualified Data.NibbleString as N
 import Blockchain.Data.RLP
+import Blockchain.DBM
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MPI
 import Blockchain.SHA
@@ -37,98 +38,87 @@ import Blockchain.Util
 
 import Blockchain.DBM
 
-detailsDBPut::B.ByteString->B.ByteString->DBM ()
+detailsDBPut::(HasDetailsDB m, MonadResource m)=>B.ByteString->B.ByteString->m ()
 detailsDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (detailsDB ctx) def key val
+  db <- getDetailsDB
+  DB.put db def key val
     
-detailsDBGet::B.ByteString->DBM (Maybe B.ByteString)
+detailsDBGet::(HasDetailsDB m, MonadResource m)=>B.ByteString->m (Maybe B.ByteString)
 detailsDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (detailsDB ctx) def key
+  db <- getDetailsDB
+  DB.get db def key
     
-blockDBPut::B.ByteString->B.ByteString->DBM ()
+blockDBPut::(HasBlockDB m, MonadResource m)=>B.ByteString->B.ByteString->m ()
 blockDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (blockDB ctx) def key val
+  db <- getBlockDB
+  DB.put db def key val
     
-blockDBGet::B.ByteString->DBM (Maybe B.ByteString)
+blockDBGet::(HasBlockDB m, MonadResource m)=>B.ByteString->m (Maybe B.ByteString)
 blockDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (blockDB ctx) def key
+  db <- getBlockDB
+  DB.get db def key
 
 
-codeDBPut::B.ByteString->DBM ()
+codeDBPut::(HasCodeDB m, MonadResource m)=>B.ByteString->m ()
 codeDBPut code = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (codeDB ctx) def (BL.toStrict $ encode $ hash code) code
+  db <- getCodeDB
+  DB.put db def (BL.toStrict $ encode $ hash code) code
     
 
-codeDBGet::B.ByteString->DBM (Maybe B.ByteString)
+codeDBGet::(HasCodeDB m, MonadResource m)=>B.ByteString->m (Maybe B.ByteString)
 codeDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (codeDB ctx) def key
+  db <- getCodeDB
+  DB.get db def key
 
-hashDBPut::N.NibbleString->DBM ()
+hashDBPut::(HasHashDB m, MonadResource m)=>N.NibbleString->m ()
 hashDBPut unsafeKey = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (hashDB ctx) def
+  db <- getHashDB
+  DB.put db def
     (nibbleString2ByteString $ MPI.keyToSafeKey unsafeKey)
     (nibbleString2ByteString unsafeKey)
 
-hashDBGet::N.NibbleString->DBM (Maybe N.NibbleString)
+hashDBGet::(HasHashDB m, MonadResource m)=>N.NibbleString->m (Maybe N.NibbleString)
 hashDBGet key = do
-  ctx <- get
+  db <- getHashDB
   liftM (fmap byteString2NibbleString) $
-    runResourceT $ DB.get (hashDB ctx) def (nibbleString2ByteString key)
+    DB.get db def (nibbleString2ByteString key)
 
-stateDBPut::B.ByteString->B.ByteString->DBM ()
+stateDBPut::(HasStateDB m, MonadResource m)=>B.ByteString->B.ByteString->m ()
 stateDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (MP.ldb $ stateDB ctx) def key val
-  put ctx{stateDB=(stateDB ctx){MP.stateRoot=MP.SHAPtr key}}
+  db <- getStateDB
+  DB.put (MP.ldb db) def key val
+  setStateDBStateRoot $ MP.SHAPtr key
 
-stateDBGet::B.ByteString->DBM (Maybe B.ByteString)
+stateDBGet::(HasStateDB m, MonadResource m)=>B.ByteString->m (Maybe B.ByteString)
 stateDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (MP.ldb $ stateDB ctx) def key
+  db <- getStateDB
+  DB.get (MP.ldb db) def key
 
-putKeyVal::N.NibbleString->RLPObject->DBM ()
+putKeyVal::(HasStateDB m, MonadResource m)=>N.NibbleString->RLPObject->m ()
 putKeyVal key val = do
-  ctx <- get
+  db <- getStateDB
   newStateDB <-
-    liftIO $ runResourceT $ MP.putKeyVal (stateDB ctx) key val
-  put ctx{stateDB=newStateDB}
+    liftIO $ runResourceT $ MP.putKeyVal db key val
+  setStateDBStateRoot $ MP.stateRoot newStateDB
 
-getAllKeyVals::DBM [(N.NibbleString, RLPObject)]
+getAllKeyVals::(HasStateDB m, MonadResource m)=>m [(N.NibbleString, RLPObject)]
 getAllKeyVals = do
-  ctx <- get
-  let db = stateDB ctx
-  liftIO $ runResourceT $ MPI.unsafeGetAllKeyVals db
+  db <- getStateDB
+  MPI.unsafeGetAllKeyVals db
 
-getKeyVal::N.NibbleString -> DBM (Maybe RLPObject)
+getKeyVal::(HasStateDB m, MonadResource m)=>N.NibbleString -> m (Maybe RLPObject)
 getKeyVal key = do
-  ctx <- get
-  let db = stateDB ctx
-  liftIO $ runResourceT $ MP.getKeyVal db key
+  db <- getStateDB
+  MP.getKeyVal db key
 
-deleteKey::N.NibbleString->DBM ()
+deleteKey::(HasStateDB m, MonadResource m)=>N.NibbleString->m ()
 deleteKey key = do
-  ctx <- get
+  db <- getStateDB
   newStateDB <-
-    liftIO $ runResourceT $ MP.deleteKey (stateDB ctx) key
-  put ctx{stateDB=newStateDB}
+    MP.deleteKey db key
+  setStateDBStateRoot $ MP.stateRoot newStateDB
 
-keyExists::N.NibbleString->DBM Bool
+keyExists::(HasStateDB m, MonadResource m)=>N.NibbleString->m Bool
 keyExists key = do
-  ctx <- get
-  liftIO $ runResourceT $ MP.keyExists (stateDB ctx) key
+  db <- getStateDB
+  MP.keyExists db key

@@ -13,12 +13,21 @@ module Blockchain.DBM (
   DBM,
   DBsLite(..),
   DBMLite,
-  setStateRoot,
+  HasSQLDB(..),
+  HasBlockDB(..),
+  HasDetailsDB(..),
+  HasStateDB(..),
+  HasHashDB(..),
+  HasCodeDB(..),
+  --setStateRoot,
   getStateRoot,
   openDBs,
   openDBsLite,
   DetailsDB,
-  BlockDB
+  BlockDB,
+  CodeDB,
+  HashDB,
+  SQLDB
   ) where
 
 
@@ -57,7 +66,7 @@ data DBs =
   DBs {
     blockDB::BlockDB,
     detailsDB::DetailsDB,
-    stateDB::MPDB,
+    stateDB'::MPDB,
     codeDB::CodeDB,
     hashDB::HashDB,
     sqlDB::SQLDB
@@ -68,20 +77,41 @@ data DBsLite =
      sqlDBLite :: SQLDB
      }
 
+class Monad m=>HasBlockDB m where
+  getBlockDB::Monad m=>m BlockDB
+
+class Monad m=>HasDetailsDB m where
+  getDetailsDB::Monad m=>m DetailsDB
+
+class MonadResource m=>HasStateDB m where
+  getStateDB::Monad m=>m MPDB
+  setStateDBStateRoot::Monad m=>SHAPtr->m ()
+
+class Monad m=>HasHashDB m where
+  getHashDB::Monad m=>m HashDB
+
+class Monad m=>HasCodeDB m where
+  getCodeDB::Monad m=>m CodeDB
+
+class Monad m=>HasSQLDB m where
+  getSQLDB::Monad m=>m SQLDB
+
 type DBM = StateT DBs (ResourceT IO)
 type DBMLite = StateT DBsLite (ResourceT IO)
 
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
 
-setStateRoot::SHAPtr->DBM ()
+{-
+setStateRoot::HasStateDB m=>SHAPtr->m ()
 setStateRoot stateRoot' = do
-  ctx <- get
+  ctx <- getStateDB
   put ctx{stateDB=(stateDB ctx){stateRoot=stateRoot'}}
+-}
 
-getStateRoot::DBM SHAPtr
+getStateRoot::HasStateDB m=>m SHAPtr
 getStateRoot = do
-  ctx <- get
-  return $ stateRoot $ stateDB ctx
+  db <- getStateDB
+  return $ stateRoot db
 
 
 options::DB.Options
