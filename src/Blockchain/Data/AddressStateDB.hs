@@ -92,7 +92,7 @@ instance RLPSerializable AddressState where
       } 
   rlpDecode x = error $ "Missing case in rlpDecode for AddressState: " ++ show (pretty x)
 
-getAddressState::(HasStateDB m, HasHashDBs m)=>Address->m AddressState
+getAddressState::(HasStateDB m, HasHashDB m)=>Address->m AddressState
 getAddressState address = do
     db <- getStateDB
     states <- MP.getKeyVal db $ addressAsNibbleString address
