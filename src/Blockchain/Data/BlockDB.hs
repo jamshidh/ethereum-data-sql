@@ -94,7 +94,7 @@ calcTotalDifficulty b bid = do
     Nothing ->
       case (blockDataNumber bd) of
         0 -> return (blockDataDifficulty bd)
-        _ ->  error "couldn't find parent to calculate difficulty"
+        _ ->  error $ "couldn't find parent to calculate difficulty, parent hash is " ++ show (pretty $ blockDataParentHash bd)
     Just p -> return $ (blockDataRefTotalDifficulty . entityVal $ p) + (blockDataDifficulty bd)
      
   where getParent h = do
