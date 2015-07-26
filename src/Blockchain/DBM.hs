@@ -17,16 +17,13 @@ module Blockchain.DBM (
   HasBlockDB(..),
   HasDetailsDB(..),
   HasStateDB(..),
-  HasHashDB(..),
-  HasCodeDB(..),
+  HasStorageDB(..),
   --setStateRoot,
   getStateRoot,
   openDBs,
   openDBsLite,
   DetailsDB,
   BlockDB,
-  CodeDB,
-  HashDB,
   SQLDB
   ) where
 
@@ -45,13 +42,13 @@ import qualified Database.Persist.Postgresql as SQL
 import Blockchain.Constants
 import Blockchain.Database.MerklePatricia
 import Blockchain.Data.DataDefs
+import Blockchain.DB.CodeDB
+import Blockchain.DB.HashDB
 
 --import Debug.Trace
 
 type BlockDB = DB.DB
-type CodeDB = DB.DB
 type DetailsDB = DB.DB
-type HashDB = DB.DB
 type SQLDB = SQL.ConnectionPool
   
 
@@ -70,21 +67,22 @@ data DBsLite =
      sqlDBLite :: SQLDB
      }
 
-class MonadResource m=>HasBlockDB m where
+class MonadResource m=>
+      HasBlockDB m where
   getBlockDB::Monad m=>m BlockDB
 
-class MonadResource m=>HasDetailsDB m where
+class MonadResource m=>
+      HasDetailsDB m where
   getDetailsDB::Monad m=>m DetailsDB
 
-class MonadResource m=>HasStateDB m where
+class MonadResource m=>
+      HasStateDB m where
   getStateDB::Monad m=>m MPDB
   setStateDBStateRoot::Monad m=>SHAPtr->m ()
 
-class MonadResource m=>HasHashDB m where
-  getHashDB::Monad m=>m HashDB
-
-class MonadResource m=>HasCodeDB m where
-  getCodeDB::Monad m=>m CodeDB
+class MonadResource m=>
+      HasStorageDB m where
+  getStorageDB::Monad m=>m DB.DB
 
 class Monad m=>HasSQLDB m where
   getSQLDB::Monad m=>m SQLDB
@@ -100,10 +98,8 @@ getStateRoot = do
   db <- getStateDB
   return $ stateRoot db
 
-
 options::DB.Options
-options = DB.defaultOptions {
-  DB.createIfMissing=True, DB.cacheSize=1024}
+options = DB.defaultOptions {DB.createIfMissing=True, DB.cacheSize=1024}
 
 openDBs::(MonadResource m, MonadBaseControl IO m)=>String->m DBs
 openDBs theType = do

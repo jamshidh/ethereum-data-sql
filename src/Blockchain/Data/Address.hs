@@ -38,7 +38,7 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.RLP
 import Blockchain.SHA
-import Blockchain.Util
+import Blockchain.ExtWord
 
 import qualified Database.Persist as P 
 import Database.Persist.Types
