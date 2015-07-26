@@ -14,7 +14,9 @@ module Blockchain.ExtDBs (
   keyExists,
   deleteKey,
   putStorageKeyVal',
-  deleteStorageKey'
+  deleteStorageKey',
+  getStorageKeyVal',
+  getAllStorageKeyVals'
   ) where
 
 import Control.Monad.State
@@ -32,7 +34,7 @@ import Blockchain.Data.RLP
 import Blockchain.DBM
 import Blockchain.DB.HashDB
 import qualified Blockchain.Database.MerklePatricia as MP
-import qualified Blockchain.Database.MerklePatricia.Internal as MPI
+import qualified Blockchain.Database.MerklePatricia.Internal as MP
 import Blockchain.ExtWord
 import Blockchain.SHA
 import Blockchain.Util
@@ -84,7 +86,7 @@ putKeyVal key val = do
 getAllKeyVals::HasStateDB m=>m [(N.NibbleString, RLPObject)]
 getAllKeyVals = do
   db <- getStateDB
-  MPI.unsafeGetAllKeyVals db
+  MP.unsafeGetAllKeyVals db
 
 getKeyVal::HasStateDB m=>N.NibbleString -> m (Maybe RLPObject)
 getKeyVal key = do
@@ -111,8 +113,8 @@ putStorageKeyVal'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
 putStorageKeyVal' owner key val = do
   hashDBPut storageKeyNibbles
   addressState <- getAddressState owner
-  db <- getStateDB
-  let mpdb = db{MP.stateRoot=addressStateContractRoot addressState}
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
   newContractRoot <- fmap MP.stateRoot $ MP.putKeyVal mpdb storageKeyNibbles (rlpEncode $ rlpSerialize $ rlpEncode $ toInteger val)
   putAddressState owner addressState{addressStateContractRoot=newContractRoot}
   where storageKeyNibbles = N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key
@@ -121,7 +123,27 @@ deleteStorageKey'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
                    Address->Word256->m ()
 deleteStorageKey' owner key = do
   addressState <- getAddressState owner
-  db <- getStateDB
-  let mpdb = db{MP.stateRoot=addressStateContractRoot addressState}
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
   newContractRoot <- fmap MP.stateRoot $ MP.deleteKey mpdb (N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key)
   putAddressState owner addressState{addressStateContractRoot=newContractRoot}
+
+getStorageKeyVal'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                   Address->Word256->m Word256
+getStorageKeyVal' owner key = do
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  maybeVal <- MP.getKeyVal mpdb (N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key)
+  case maybeVal of
+    Nothing -> return 0
+    Just x -> return $ fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode x
+
+getAllStorageKeyVals'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                       Address->m [(MP.Key, Word256)]
+getAllStorageKeyVals' owner = do
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  kvs <- MP.unsafeGetAllKeyVals mpdb
+  return $ map (fmap $ fromInteger . rlpDecode . rlpDeserialize . rlpDecode) kvs
