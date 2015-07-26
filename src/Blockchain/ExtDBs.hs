@@ -12,7 +12,9 @@ module Blockchain.ExtDBs (
   getKeyVal,
   getAllKeyVals,
   keyExists,
-  deleteKey
+  deleteKey,
+  putStorageKeyVal',
+  deleteStorageKey'
   ) where
 
 import Control.Monad.State
@@ -104,9 +106,9 @@ keyExists key = do
 ----
 
 
-putStorageKeyVal::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+putStorageKeyVal'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
                   Address->Word256->Word256->m ()
-putStorageKeyVal owner key val = do
+putStorageKeyVal' owner key val = do
   hashDBPut storageKeyNibbles
   addressState <- getAddressState owner
   db <- getStateDB
