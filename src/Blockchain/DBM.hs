@@ -10,7 +10,6 @@
 
 module Blockchain.DBM (
   DBs(..),
-  DBM,
   DBsLite(..),
   DBMLite,
   HasSQLDB(..),
@@ -87,7 +86,6 @@ class MonadResource m=>
 class Monad m=>HasSQLDB m where
   getSQLDB::Monad m=>m SQLDB
 
-type DBM = StateT DBs (ResourceT IO)
 type DBMLite = StateT DBsLite (ResourceT IO)
 
 connStr::SQL.ConnectionString
