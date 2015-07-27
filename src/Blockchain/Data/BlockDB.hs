@@ -48,14 +48,15 @@ import Foreign.ForeignPtr.Unsafe
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
-import Blockchain.DBM 
 import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 import qualified Blockchain.Database.MerklePatricia as MP
-import Blockchain.ExtDBs
+import Blockchain.DB.BlockDB
+import Blockchain.DB.SQLDB
 import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
+import Blockchain.DB.BlockDB
 import Blockchain.SHA
 import Blockchain.Util
 import Blockchain.Data.RawTransaction

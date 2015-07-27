@@ -22,39 +22,22 @@ module Blockchain.Data.AddressStateDB (
   getStorageKeyFromHash
 ) where 
 
-
-import Data.Default
-import qualified Database.LevelDB as DB
-import Database.Persist hiding (get)
-import Database.Persist.Class
-import Database.Persist.Types
-import Database.Persist.TH
-import Database.Persist.Postgresql as SQL hiding (get)
-
-import Blockchain.DBM
 import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 
---import Blockchain.ExtDBs
 import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
-import Blockchain.DBM
 import Blockchain.DB.HashDB
+import Blockchain.DB.StateDB
 import Blockchain.SHA
 import Blockchain.Util
---import Blockchain.Data.BlockDB
-import Blockchain.Data.Transaction
 import Blockchain.Data.DataDefs
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MP
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
-import Data.Functor
-import Data.List
-import Data.Time
-import qualified Data.ByteString as B
 
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))

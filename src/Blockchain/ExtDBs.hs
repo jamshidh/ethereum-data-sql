@@ -2,10 +2,6 @@
 module Blockchain.ExtDBs (
   MP.SHAPtr(..),
   MP.emptyTriePtr,
-  detailsDBPut,
-  detailsDBGet,
-  blockDBGet,
-  blockDBPut,
   stateDBPut,
   stateDBGet,
   putKeyVal,
@@ -33,6 +29,7 @@ import Blockchain.Data.AddressStateDB
 import Blockchain.Data.RLP
 import Blockchain.DBM
 import Blockchain.DB.HashDB
+import Blockchain.DB.StateDB
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MP
 import Blockchain.ExtWord
@@ -40,26 +37,6 @@ import Blockchain.SHA
 import Blockchain.Util
 
 import Blockchain.DBM
-
-detailsDBPut::HasDetailsDB m=>B.ByteString->B.ByteString->m ()
-detailsDBPut key val = do
-  db <- getDetailsDB
-  DB.put db def key val
-    
-detailsDBGet::HasDetailsDB m=>B.ByteString->m (Maybe B.ByteString)
-detailsDBGet key = do
-  db <- getDetailsDB
-  DB.get db def key
-    
-blockDBPut::HasBlockDB m=>B.ByteString->B.ByteString->m ()
-blockDBPut key val = do
-  db <- getBlockDB
-  DB.put db def key val
-    
-blockDBGet::HasBlockDB m=>B.ByteString->m (Maybe B.ByteString)
-blockDBGet key = do
-  db <- getBlockDB
-  DB.get db def key
 
 
 

@@ -21,7 +21,8 @@ import Blockchain.Data.DataDefs
 import Blockchain.Data.RLP
 import Blockchain.DB.CodeDB
 import Blockchain.DB.HashDB
-import Blockchain.DBM
+import Blockchain.DB.SQLDB
+import Blockchain.DB.StateDB
 import Blockchain.ExtWord
 import Blockchain.Util
 

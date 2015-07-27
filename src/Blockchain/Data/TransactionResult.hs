@@ -16,6 +16,7 @@ import Control.Monad.Trans.Resource
 
 import Blockchain.Data.DataDefs
 import Blockchain.DBM
+import Blockchain.DB.SQLDB
 
 putTransactionResult::(HasSQLDB m, MonadIO m, MonadBaseControl IO m)=>
                       TransactionResult->m (Key TransactionResult)

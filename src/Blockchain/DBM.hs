@@ -12,18 +12,11 @@ module Blockchain.DBM (
   DBs(..),
   DBsLite(..),
   DBMLite,
-  HasSQLDB(..),
-  HasBlockDB(..),
-  HasDetailsDB(..),
-  HasStateDB(..),
   HasStorageDB(..),
   --setStateRoot,
   getStateRoot,
   openDBs,
-  openDBsLite,
-  DetailsDB,
-  BlockDB,
-  SQLDB
+  openDBsLite
   ) where
 
 
@@ -39,23 +32,23 @@ import           Control.Monad.Logger    (runNoLoggingT)
 import qualified Database.Persist.Postgresql as SQL
 
 import Blockchain.Constants
-import Blockchain.Database.MerklePatricia
+
 import Blockchain.Data.DataDefs
+import qualified Blockchain.Database.MerklePatricia as MP
+import Blockchain.DB.BlockDB
 import Blockchain.DB.CodeDB
+import Blockchain.DB.DetailsDB
 import Blockchain.DB.HashDB
+import Blockchain.DB.SQLDB
+import Blockchain.DB.StateDB
 
 --import Debug.Trace
-
-type BlockDB = DB.DB
-type DetailsDB = DB.DB
-type SQLDB = SQL.ConnectionPool
-  
 
 data DBs =
   DBs {
     blockDB'::BlockDB,
     detailsDB'::DetailsDB,
-    stateDB'::MPDB,
+    stateDB'::MP.MPDB,
     codeDB'::CodeDB,
     hashDB'::HashDB,
     sqlDB'::SQLDB
@@ -67,34 +60,13 @@ data DBsLite =
      }
 
 class MonadResource m=>
-      HasBlockDB m where
-  getBlockDB::Monad m=>m BlockDB
-
-class MonadResource m=>
-      HasDetailsDB m where
-  getDetailsDB::Monad m=>m DetailsDB
-
-class MonadResource m=>
-      HasStateDB m where
-  getStateDB::Monad m=>m MPDB
-  setStateDBStateRoot::Monad m=>SHAPtr->m ()
-
-class MonadResource m=>
       HasStorageDB m where
   getStorageDB::Monad m=>m DB.DB
-
-class Monad m=>HasSQLDB m where
-  getSQLDB::Monad m=>m SQLDB
 
 type DBMLite = StateT DBsLite (ResourceT IO)
 
 connStr::SQL.ConnectionString
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
-
-getStateRoot::HasStateDB m=>m SHAPtr
-getStateRoot = do
-  db <- getStateDB
-  return $ stateRoot db
 
 options::DB.Options
 options = DB.defaultOptions {DB.createIfMissing=True, DB.cacheSize=1024}
@@ -111,7 +83,7 @@ openDBs theType = do
   return $ DBs
       bdb
       ddb
-      MPDB{ ldb=sdb, stateRoot=error "no stateRoot defined"}
+      MP.MPDB{ MP.ldb=sdb, MP.stateRoot=error "no stateRoot defined"}
       sdb
       sdb
       sqldb
