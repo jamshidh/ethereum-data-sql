@@ -87,6 +87,7 @@ library
                    Blockchain.DB.HashDB
                    Blockchain.DB.SQLDB   
                    Blockchain.DB.StateDB
+                   Blockchain.DB.StorageDB
                    Blockchain.ExtDBs
     other-modules:
                    Blockchain.Data.MiscJSON

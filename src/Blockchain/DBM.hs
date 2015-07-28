@@ -12,7 +12,6 @@ module Blockchain.DBM (
   DBs(..),
   DBsLite(..),
   DBMLite,
-  HasStorageDB(..),
   --setStateRoot,
   getStateRoot,
   openDBs,
@@ -58,10 +57,6 @@ data DBsLite =
   DBsLite {
      sqlDBLite :: SQLDB
      }
-
-class MonadResource m=>
-      HasStorageDB m where
-  getStorageDB::Monad m=>m DB.DB
 
 type DBMLite = StateT DBsLite (ResourceT IO)
 

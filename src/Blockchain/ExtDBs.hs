@@ -30,6 +30,7 @@ import Blockchain.Data.RLP
 import Blockchain.DBM
 import Blockchain.DB.HashDB
 import Blockchain.DB.StateDB
+import Blockchain.DB.StorageDB
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MP
 import Blockchain.ExtWord
