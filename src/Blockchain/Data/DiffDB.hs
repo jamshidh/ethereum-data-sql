@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Blockchain.Data.DiffDB (
   sqlDiff,
   commitSqlDiffs,
@@ -18,7 +20,9 @@ import Blockchain.Data.AddressStateDB
 import Blockchain.Data.DataDefs
 import Blockchain.Data.RLP
 import Blockchain.DB.CodeDB
-import Blockchain.DBM
+import Blockchain.DB.HashDB
+import Blockchain.DB.SQLDB
+import Blockchain.DB.StateDB
 import Blockchain.ExtWord
 import Blockchain.Util
 
@@ -28,19 +32,21 @@ import qualified Data.NibbleString as N
 
 import Debug.Trace
 
-type SqlDbM = SQL.SqlPersistT (ResourceT DBM)
+type SqlDbM m = SQL.SqlPersistT m
 
-sqlDiff :: BlockDataRefId -> Integer -> SHAPtr -> SHAPtr -> DBM ()
+sqlDiff :: (HasSQLDB m, HasCodeDB m, HasStateDB m, HasHashDB m, MonadResource m, MonadBaseControl IO m)=>
+           BlockDataRefId -> Integer -> SHAPtr -> SHAPtr -> m ()
 sqlDiff blkDataId blkNum oldAddrs newAddrs = do
-  ctx <- ST.get
-  kvs <- lift $ unsafeGetAllKeyVals $ stateDB ctx
-  diffAddrs <- addrDbDiff (stateDB ctx) oldAddrs newAddrs
+  db <- getStateDB
+  kvs <- unsafeGetAllKeyVals db
+  diffAddrs <- addrDbDiff db oldAddrs newAddrs
   commitSqlDiffs blkDataId blkNum diffAddrs
 
-commitSqlDiffs :: BlockDataRefId -> Integer -> [AddrDiffOp] -> DBM ()
+commitSqlDiffs :: (HasStateDB m, HasHashDB m, HasCodeDB m, HasSQLDB m, MonadResource m, MonadBaseControl IO m)=>
+                  BlockDataRefId -> Integer -> [AddrDiffOp] -> m ()
 commitSqlDiffs blkDataId blkNum diffAddrs = do
-  ctx <- ST.get
-  runResourceT $ SQL.runSqlPool (mapM_ (commitAddr blkDataId blkNum) diffAddrs) (sqlDB ctx)
+  pool <- getSQLDB
+  SQL.runSqlPool (mapM_ (commitAddr blkDataId blkNum) diffAddrs) pool
 
 data AddrDiffOp =
   CreateAddr { addr :: Address, state :: AddressState } |
@@ -48,12 +54,12 @@ data AddrDiffOp =
   UpdateAddr { addr :: Address, oldState :: AddressState, newState :: AddressState }
   deriving (Show)
 
-addrDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [AddrDiffOp]
+addrDbDiff :: (HasStateDB m, HasHashDB m, MonadResource m)=>MPDB -> SHAPtr -> SHAPtr -> m [AddrDiffOp]
 addrDbDiff db ptr1 ptr2 = do
-  diffs <- lift $ Diff.dbDiff db ptr1 ptr2
+  diffs <- Diff.dbDiff db ptr1 ptr2
   mapM addrConvert diffs
 
-addrConvert :: Diff.DiffOp -> DBM AddrDiffOp
+addrConvert :: (HasStateDB m, HasHashDB m, MonadResource m)=>Diff.DiffOp -> m AddrDiffOp
 
 addrConvert (Diff.Create k v) = do
   Just k' <- getAddressFromHash (N.pack k)
@@ -70,16 +76,17 @@ addrConvert (Diff.Update k v1 v2) = do
       v2' = rlpDecode $ rlpDeserialize $ rlpDecode v2
   return $ UpdateAddr k' v1' v2'
 
-commitAddr :: BlockDataRefId -> Integer -> AddrDiffOp -> SqlDbM ()
+commitAddr :: (HasStateDB m, HasHashDB m, HasCodeDB m, MonadResource m, MonadBaseControl IO m)=>
+              BlockDataRefId -> Integer -> AddrDiffOp -> SQL.SqlPersistT m ()
 
 commitAddr blkDataId blkNum CreateAddr{ addr = addr, state = addrS } = do
-  Just code <- lift $ lift $ getCode ch
+  Just code <- lift $ getCode ch
   let aRef = AddressStateRef addr n b cr code blkDataId blkNum -- Should use Lens here, no doubt
   addrID <- SQL.insert aRef
-  ctx <- lift $ lift ST.get
-  addrStorageKVs <- lift $ lift $ lift $
-                    unsafeGetAllKeyVals (stateDB ctx){stateRoot = addrStorageRoot}
-  realStorageKVs <- lift $ lift $ mapM decodeKV addrStorageKVs
+  db <- lift getStateDB
+  addrStorageKVs <- --lift $ lift $ lift $
+                    unsafeGetAllKeyVals db{stateRoot = addrStorageRoot}
+  realStorageKVs <- lift $ mapM decodeKV addrStorageKVs
   mapM_ (SQL.insert . storageOfKV addrID) realStorageKVs
   where
     AddressState n b cr ch = addrS
@@ -97,8 +104,8 @@ commitAddr blkDataId blkNum UpdateAddr{ addr = addr, oldState = addrS1, newState
   SQL.update addrID [ AddressStateRefNonce =. n, AddressStateRefBalance =. b,
                       AddressStateRefLatestBlockDataRefId =. blkDataId,
                       AddressStateRefLatestBlockDataRefNumber =. blkNum]
-  ctx <- lift $ lift ST.get
-  storageDiff <- lift $ lift $ storageDbDiff (stateDB ctx) oldAddrStorage newAddrStorage
+  db <- lift getStateDB
+  storageDiff <- lift $ storageDbDiff db oldAddrStorage newAddrStorage
   mapM_ (commitStorage addrID) (trace ("Address " ++ formatAddressWithoutColor addr ++ ": " ++ show storageDiff) storageDiff)
   where
     AddressState _ _ cr1 _ = addrS1
@@ -112,12 +119,12 @@ data StorageDiffOp =
   UpdateStorage { key :: Word256, oldVal :: Word256, newVal :: Word256 }
   deriving (Show)
 
-storageDbDiff :: MPDB -> SHAPtr -> SHAPtr -> DBM [StorageDiffOp]
+storageDbDiff :: (HasHashDB m, MonadResource m)=>MPDB -> SHAPtr -> SHAPtr -> m [StorageDiffOp]
 storageDbDiff db ptr1 ptr2 = do
-  diffs <- lift $ Diff.dbDiff db ptr1 ptr2
+  diffs <- Diff.dbDiff db ptr1 ptr2
   mapM storageConvert diffs
 
-storageConvert :: Diff.DiffOp -> DBM StorageDiffOp
+storageConvert :: (HasHashDB m, MonadResource m)=>Diff.DiffOp -> m StorageDiffOp
 
 storageConvert (Diff.Create k v) = do
   Just k' <- getStorageKeyFromHash $ N.pack k
@@ -134,7 +141,7 @@ storageConvert (Diff.Update k v1 v2) = do
       v2' = fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode v2
   return $ UpdateStorage k' v1' v2'
 
-commitStorage :: SQL.Key AddressStateRef -> StorageDiffOp -> SqlDbM ()
+commitStorage :: (HasStateDB m, HasHashDB m, MonadResource m)=>SQL.Key AddressStateRef -> StorageDiffOp -> SqlDbM m ()
 
 commitStorage addrID CreateStorage{ key = storageKey, val = storageVal } = do
   SQL.insert $ Storage addrID storageKey storageVal
@@ -149,7 +156,7 @@ commitStorage addrID UpdateStorage{ key = storageKey, oldVal = _, newVal = stora
   SQL.update storageID [ StorageValue =. storageVal ]
   return ()
 
-getAddressStateSQL :: Address -> String -> SqlDbM (SQL.Key AddressStateRef)
+getAddressStateSQL :: (HasStateDB m, HasHashDB m, MonadResource m)=>Address -> String -> SqlDbM m (SQL.Key AddressStateRef)
 getAddressStateSQL addr s = do
   addrIDs <- SQL.selectKeysList
               [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
@@ -157,7 +164,7 @@ getAddressStateSQL addr s = do
     then error $ s ++ ": Address not found in SQL db: " ++ formatAddressWithoutColor addr
     else return $ head addrIDs
 
-getStorageKeySQL :: (SQL.Key AddressStateRef) -> Word256 -> String -> SqlDbM (SQL.Key Storage)
+getStorageKeySQL :: (HasStateDB m, HasHashDB m, MonadResource m)=>(SQL.Key AddressStateRef) -> Word256 -> String -> SqlDbM m (SQL.Key Storage)
 getStorageKeySQL addrID storageKey s = do
   storageIDs <- SQL.selectKeysList
               [ StorageAddressStateRefId SQL.==. addrID, StorageKey SQL.==. storageKey ]

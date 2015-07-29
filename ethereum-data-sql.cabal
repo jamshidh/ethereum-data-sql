@@ -66,22 +66,29 @@ library
     exposed-modules: 
                    Blockchain.Colors
                    Blockchain.Constants
-                   Blockchain.DBM
                    Blockchain.Data.Address
-                   Blockchain.Data.DataDefs
+                   Blockchain.Data.AddressStateDB
+                   Blockchain.Data.BlockDB
                    Blockchain.Data.Code
+                   Blockchain.Data.DataDefs
+                   Blockchain.Data.DiffDB
+                   Blockchain.Data.GenesisBlock
+                   Blockchain.Data.Json
                    Blockchain.Data.Log
+                   Blockchain.Data.PersistTypes
+                   Blockchain.Data.RawTransaction
                    Blockchain.Data.Transaction
                    Blockchain.Data.TransactionReceipt
-                   Blockchain.DB.CodeDB
-                   Blockchain.ExtDBs
-                   Blockchain.Data.DiffDB
-                   Blockchain.Data.BlockDB
-                   Blockchain.Data.AddressStateDB
-                   Blockchain.Data.RawTransaction
                    Blockchain.Data.TransactionResult
-                   Blockchain.Data.PersistTypes
-                   Blockchain.Data.Json
+                   Blockchain.DBM
+                   Blockchain.DB.BlockDB
+                   Blockchain.DB.CodeDB
+                   Blockchain.DB.DetailsDB
+                   Blockchain.DB.HashDB
+                   Blockchain.DB.SQLDB   
+                   Blockchain.DB.StateDB
+                   Blockchain.DB.StorageDB
+                   Blockchain.ExtDBs
     other-modules:
                    Blockchain.Data.MiscJSON
     C-sources: fastNonceFinder/nonceFinder.c

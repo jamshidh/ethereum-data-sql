@@ -14,12 +14,6 @@ module Blockchain.Data.BlockDB (
   Block(..),
   BlockData(..),
   blockHash,
-  powFunc,
-  headerHashWithoutNonce,
-  addNonceToBlock,
-  findNonce,
-  fastFindNonce,
-  nonceIsValid,
   getBlock,
   getBlockLite,
   putBlock,
@@ -34,6 +28,7 @@ import Database.Persist hiding (get)
 import Database.Persist.Types
 import Database.Persist.TH
 import qualified Database.Persist.Postgresql as SQL
+import qualified Database.Persist.Sql as SQL
 import qualified Database.Esqueleto as E
 
 import qualified Crypto.Hash.SHA3 as C
@@ -53,14 +48,15 @@ import Foreign.ForeignPtr.Unsafe
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
-import Blockchain.DBM 
 import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 import qualified Blockchain.Database.MerklePatricia as MP
-import Blockchain.ExtDBs
+import Blockchain.DB.BlockDB
+import Blockchain.DB.SQLDB
 import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
+import Blockchain.DB.BlockDB
 import Blockchain.SHA
 import Blockchain.Util
 import Blockchain.Data.RawTransaction
@@ -88,30 +84,30 @@ tx2RawTX tx blkId blkNum =
 tx2RawTX' :: Transaction -> RawTransaction
 tx2RawTX' tx = tx2RawTX tx (E.toSqlKey 1) (-1)
 
-calcTotalDifficulty :: Block -> BlockId -> DBM Integer
+calcTotalDifficulty :: (HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block -> BlockId -> m Integer
 calcTotalDifficulty b bid = do
-  ctx <- get
+  db <- getSQLDB
   let bd = blockBlockData b
 
   parent <- runResourceT $
-     SQL.runSqlPool (getParent (blockDataParentHash bd)) $ sqlDB ctx
+     SQL.runSqlPool (getParent (blockDataParentHash bd)) db
   case parent of
     Nothing ->
       case (blockDataNumber bd) of
         0 -> return (blockDataDifficulty bd)
-        _ ->  error "couldn't find parent to calculate difficulty"
+        _ ->  error $ "couldn't find parent to calculate difficulty, parent hash is " ++ show (pretty $ blockDataParentHash bd)
     Just p -> return $ (blockDataRefTotalDifficulty . entityVal $ p) + (blockDataDifficulty bd)
      
   where getParent h = do
           SQL.selectFirst [ BlockDataRefHash SQL.==. h ] []
 
-calcTotalDifficultyLite :: Block -> BlockId -> DBMLite Integer
+calcTotalDifficultyLite :: (HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block -> BlockId -> m Integer
 calcTotalDifficultyLite b bid = do
-  ctx <- get
+  pool <- getSQLDB
   let bd = blockBlockData b
 
   parent <- runResourceT $
-     SQL.runSqlPool (getParent (blockDataParentHash bd)) $ sqlDBLite ctx
+     SQL.runSqlPool (getParent (blockDataParentHash bd)) pool
   case parent of
     Nothing ->
       case (blockDataNumber bd) of
@@ -166,15 +162,15 @@ blk2BlkDataRefLite b blkId = do
       mH = blockDataMixHash bd
 
 
-getBlock::SHA->DBM (Maybe Block)
+getBlock::(HasBlockDB m, MonadResource m)=>SHA->m (Maybe Block)
 getBlock h = 
   fmap (rlpDecode . rlpDeserialize) <$> blockDBGet (BL.toStrict $ encode h)
 
-getBlockLite :: SHA->DBMLite (Maybe Block)
+getBlockLite :: (HasSQLDB m, MonadResource m, MonadBaseControl IO m)=>SHA->m (Maybe Block)
 getBlockLite h = do
-  ctx <- get
+  db <- getSQLDB
   entBlkL <- runResourceT $
-    SQL.runSqlPool actions $ sqlDBLite $ ctx
+    SQL.runSqlPool actions db
 
   case entBlkL of
     [] -> return Nothing
@@ -183,7 +179,7 @@ getBlockLite h = do
                                    E.where_ ( (bdRef E.^. BlockDataRefHash E.==. E.val h ) E.&&. ( bdRef E.^. BlockDataRefBlockId E.==. block E.^. BlockId ))
                                    return block                        
 
-putBlock::Block->DBM (Key BlockDataRef)
+putBlock::(HasBlockDB m, HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block->m (Key BlockDataRef)
 putBlock b = do
   blkDataId <- putBlockSql b
   let bytes = rlpSerialize $ rlpEncode b
@@ -191,12 +187,11 @@ putBlock b = do
   return blkDataId
 
 
-putBlockSql ::Block->DBM (Key BlockDataRef)
+putBlockSql ::(HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block->m (Key BlockDataRef)
 putBlockSql b = do
-  ctx <- get
-  
+  db <- getSQLDB
   runResourceT $
-    SQL.runSqlPool actions $ sqlDB $ ctx 
+    SQL.runSqlPool actions db
   where actions = do
           blkId <- SQL.insert $ b                      
           toInsert <- lift $ lift $ blk2BlkDataRef b blkId
@@ -217,12 +212,11 @@ putBlockSql b = do
                                                 RawTransactionBlockNumber SQL.=. (fromIntegral $ blockDataNumber (blockBlockData b)) ])
                              lst
 
-putBlockLite ::Block->DBMLite (Key BlockDataRef)
+putBlockLite ::(HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block->m (Key BlockDataRef)
 putBlockLite b = do
-  ctx <- get
-  
+  db <- getSQLDB
   runResourceT $
-    SQL.runSqlPool actions $ sqlDBLite $ ctx 
+    SQL.runSqlPool actions db
   where actions = do
           blkId <- SQL.insert $ b                      
           toInsert <- lift $ lift $ blk2BlkDataRefLite b blkId
@@ -242,8 +236,6 @@ putBlockLite b = do
                                               [ RawTransactionBlockId SQL.=. blkid, 
                                                 RawTransactionBlockNumber SQL.=. (fromIntegral $ blockDataNumber (blockBlockData b)) ])
                              lst
-
-
 
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
@@ -328,102 +320,3 @@ instance Format BlockData where
     "extraData: " ++ show (pretty $ blockDataExtraData b) ++ "\n" ++
     "nonce: " ++ showHex (blockDataNonce b) "" ++ "\n"
 
-
---------------------------
---Mining stuff
-
---used as part of the powFunc
-noncelessBlockData2RLP::BlockData->RLPObject
-noncelessBlockData2RLP bd =
-  RLPArray [
-      rlpEncode $ blockDataParentHash bd,
-      rlpEncode $ blockDataUnclesHash bd,
-      rlpEncode $ blockDataCoinbase bd,
-      rlpEncode $ blockDataStateRoot bd,
-      rlpEncode $ blockDataTransactionsRoot bd,
-      rlpEncode $ blockDataReceiptsRoot bd,
-      rlpEncode $ blockDataLogBloom bd,
-      rlpEncode $ blockDataDifficulty bd,
-      rlpEncode $ blockDataNumber bd,
-      rlpEncode $ blockDataGasLimit bd,
-      rlpEncode $ blockDataGasUsed bd,
-      rlpEncode (round $ utcTimeToPOSIXSeconds $ blockDataTimestamp bd::Integer),
-      rlpEncode $ blockDataExtraData bd
-      ]
-
-{-
-noncelessBlock2RLP::Block->RLPObject
-noncelessBlock2RLP Block{blockData=bd, receiptTransactions=receipts, blockUncles=[]} =
-  RLPArray [noncelessBlockData2RLP bd, RLPArray (rlpEncode <$> receipts), RLPArray []]
-noncelessBlock2RLP _ = error "noncelessBock2RLP not definted for blockUncles /= []"
--}
-
-sha2ByteString::SHA->B.ByteString
-sha2ByteString (SHA val) = BL.toStrict $ encode val
-
-headerHashWithoutNonce::Block->ByteString
-headerHashWithoutNonce b = C.hash 256 $ rlpSerialize $ noncelessBlockData2RLP $ blockBlockData b
-
-powFunc::Block->Integer
-powFunc b =
-  --trace (show $ headerHashWithoutNonce b) $
-  byteString2Integer $ 
-  C.hash 256 $
-    headerHashWithoutNonce b
-    `B.append`
-    B.pack (word64ToBytes (blockDataNonce $ blockBlockData b))
-
-nonceIsValid::Block->Bool
-nonceIsValid b = powFunc b * blockDataDifficulty (blockBlockData b) < (2::Integer)^(256::Integer)
-
-addNonceToBlock::Block->Integer->Block
-addNonceToBlock b n =
-  b {
-    blockBlockData=(blockBlockData b) {blockDataNonce= fromInteger n}
-    }
-
-findNonce::Block->Integer
-findNonce b =
-    fromMaybe (error "Huh?  You ran out of numbers!!!!") $
-              find (nonceIsValid . addNonceToBlock b) [1..]
-
-
-----------
-
-fastFindNonce::Block->IO Integer
-fastFindNonce b = do
-  let (theData, _, _) = toForeignPtr $ headerHashWithoutNonce b
-  let (theThreshold, _, _) = toForeignPtr threshold
-  retValue <- mallocArray 32
-  retInt <- c_fastFindNonce (unsafeForeignPtrToPtr theData) (unsafeForeignPtrToPtr theThreshold) retValue
-  print retInt
-  retData <- peekArray 32 retValue
-  return $ byteString2Integer $ B.pack retData
-  where
-    threshold::B.ByteString
-    threshold = fst $ B16.decode $ BC.pack $ padZeros 64 $ showHex ((2::Integer)^(256::Integer) `quot` blockDataDifficulty (blockBlockData b)) ""
-
-foreign import ccall "findNonce" c_fastFindNonce::Ptr Word8->Ptr Word8->Ptr Word8->IO Int
---foreign import ccall "fastFindNonce" c_fastFindNonce::ForeignPtr Word8->ForeignPtr Word8->ForeignPtr Word8
-
-
-{-
-fastFindNonce::Block->Integer
-fastFindNonce b =
-  byteString2Integer $ BC.pack $ 
-  BC.unpack $
-  C.hash 256 (
-    first `B.append` second)
-  where
-    first = headerHashWithoutNonce b
-
-fastPowFunc::Block->Integer
-fastPowFunc b =
-  --trace (show $ headerHashWithoutNonce b) $
-  byteString2Integer $ BC.pack $ 
-  BC.unpack $
-  C.hash 256 (
-    headerHashWithoutNonce b
-    `B.append`
-    sha2ByteString (nonce $ blockData b))
--}

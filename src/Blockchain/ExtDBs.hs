@@ -2,21 +2,17 @@
 module Blockchain.ExtDBs (
   MP.SHAPtr(..),
   MP.emptyTriePtr,
-  detailsDBPut,
-  detailsDBGet,
-  blockDBGet,
-  blockDBPut,
-  codeDBGet,
-  codeDBPut,
   stateDBPut,
   stateDBGet,
-  hashDBPut,
-  hashDBGet,
   putKeyVal,
   getKeyVal,
   getAllKeyVals,
   keyExists,
-  deleteKey
+  deleteKey,
+  putStorageKeyVal',
+  deleteStorageKey',
+  getStorageKeyVal',
+  getAllStorageKeyVals'
   ) where
 
 import Control.Monad.State
@@ -26,109 +22,106 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import Data.Default
 import qualified Database.LevelDB as DB
-import Network.Haskoin.Internals
 
 import qualified Data.NibbleString as N
+import Blockchain.Data.Address
+import Blockchain.Data.AddressStateDB
 import Blockchain.Data.RLP
+import Blockchain.DBM
+import Blockchain.DB.HashDB
+import Blockchain.DB.StateDB
+import Blockchain.DB.StorageDB
 import qualified Blockchain.Database.MerklePatricia as MP
-import qualified Blockchain.Database.MerklePatricia.Internal as MPI
+import qualified Blockchain.Database.MerklePatricia.Internal as MP
+import Blockchain.ExtWord
 import Blockchain.SHA
 import Blockchain.Util
 
 import Blockchain.DBM
 
-detailsDBPut::B.ByteString->B.ByteString->DBM ()
-detailsDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (detailsDB ctx) def key val
-    
-detailsDBGet::B.ByteString->DBM (Maybe B.ByteString)
-detailsDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (detailsDB ctx) def key
-    
-blockDBPut::B.ByteString->B.ByteString->DBM ()
-blockDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (blockDB ctx) def key val
-    
-blockDBGet::B.ByteString->DBM (Maybe B.ByteString)
-blockDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (blockDB ctx) def key
 
 
-codeDBPut::B.ByteString->DBM ()
-codeDBPut code = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (codeDB ctx) def (BL.toStrict $ encode $ hash code) code
-    
-
-codeDBGet::B.ByteString->DBM (Maybe B.ByteString)
-codeDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (codeDB ctx) def key
-
-hashDBPut::N.NibbleString->DBM ()
-hashDBPut unsafeKey = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (hashDB ctx) def
-    (nibbleString2ByteString $ MPI.keyToSafeKey unsafeKey)
-    (nibbleString2ByteString unsafeKey)
-
-hashDBGet::N.NibbleString->DBM (Maybe N.NibbleString)
-hashDBGet key = do
-  ctx <- get
-  liftM (fmap byteString2NibbleString) $
-    runResourceT $ DB.get (hashDB ctx) def (nibbleString2ByteString key)
-
-stateDBPut::B.ByteString->B.ByteString->DBM ()
+----
+  
+stateDBPut::HasStateDB m=>B.ByteString->B.ByteString->m ()
 stateDBPut key val = do
-  ctx <- get
-  runResourceT $ 
-    DB.put (MP.ldb $ stateDB ctx) def key val
-  put ctx{stateDB=(stateDB ctx){MP.stateRoot=MP.SHAPtr key}}
+  db <- getStateDB
+  DB.put (MP.ldb db) def key val
+  setStateDBStateRoot $ MP.SHAPtr key
 
-stateDBGet::B.ByteString->DBM (Maybe B.ByteString)
+stateDBGet::HasStateDB m=>B.ByteString->m (Maybe B.ByteString)
 stateDBGet key = do
-  ctx <- get
-  runResourceT $ 
-    DB.get (MP.ldb $ stateDB ctx) def key
+  db <- getStateDB
+  DB.get (MP.ldb db) def key
 
-putKeyVal::N.NibbleString->RLPObject->DBM ()
+putKeyVal::HasStateDB m=>N.NibbleString->RLPObject->m ()
 putKeyVal key val = do
-  ctx <- get
+  db <- getStateDB
   newStateDB <-
-    liftIO $ runResourceT $ MP.putKeyVal (stateDB ctx) key val
-  put ctx{stateDB=newStateDB}
+    liftIO $ runResourceT $ MP.putKeyVal db key val
+  setStateDBStateRoot $ MP.stateRoot newStateDB
 
-getAllKeyVals::DBM [(N.NibbleString, RLPObject)]
+getAllKeyVals::HasStateDB m=>m [(N.NibbleString, RLPObject)]
 getAllKeyVals = do
-  ctx <- get
-  let db = stateDB ctx
-  liftIO $ runResourceT $ MPI.unsafeGetAllKeyVals db
+  db <- getStateDB
+  MP.unsafeGetAllKeyVals db
 
-getKeyVal::N.NibbleString -> DBM (Maybe RLPObject)
+getKeyVal::HasStateDB m=>N.NibbleString -> m (Maybe RLPObject)
 getKeyVal key = do
-  ctx <- get
-  let db = stateDB ctx
-  liftIO $ runResourceT $ MP.getKeyVal db key
+  db <- getStateDB
+  MP.getKeyVal db key
 
-deleteKey::N.NibbleString->DBM ()
+deleteKey::HasStateDB m=>N.NibbleString->m ()
 deleteKey key = do
-  ctx <- get
+  db <- getStateDB
   newStateDB <-
-    liftIO $ runResourceT $ MP.deleteKey (stateDB ctx) key
-  put ctx{stateDB=newStateDB}
+    MP.deleteKey db key
+  setStateDBStateRoot $ MP.stateRoot newStateDB
 
-keyExists::N.NibbleString->DBM Bool
+keyExists::HasStateDB m=>N.NibbleString->m Bool
 keyExists key = do
-  ctx <- get
-  liftIO $ runResourceT $ MP.keyExists (stateDB ctx) key
+  db <- getStateDB
+  MP.keyExists db key
+
+----
+
+
+putStorageKeyVal'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                  Address->Word256->Word256->m ()
+putStorageKeyVal' owner key val = do
+  hashDBPut storageKeyNibbles
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  newContractRoot <- fmap MP.stateRoot $ MP.putKeyVal mpdb storageKeyNibbles (rlpEncode $ rlpSerialize $ rlpEncode $ toInteger val)
+  putAddressState owner addressState{addressStateContractRoot=newContractRoot}
+  where storageKeyNibbles = N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key
+
+deleteStorageKey'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                   Address->Word256->m ()
+deleteStorageKey' owner key = do
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  newContractRoot <- fmap MP.stateRoot $ MP.deleteKey mpdb (N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key)
+  putAddressState owner addressState{addressStateContractRoot=newContractRoot}
+
+getStorageKeyVal'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                   Address->Word256->m Word256
+getStorageKeyVal' owner key = do
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  maybeVal <- MP.getKeyVal mpdb (N.pack $ (N.byte2Nibbles =<<) $ word256ToBytes key)
+  case maybeVal of
+    Nothing -> return 0
+    Just x -> return $ fromInteger $ rlpDecode $ rlpDeserialize $ rlpDecode x
+
+getAllStorageKeyVals'::(HasStorageDB m, HasStateDB m, HasHashDB m)=>
+                       Address->m [(MP.Key, Word256)]
+getAllStorageKeyVals' owner = do
+  addressState <- getAddressState owner
+  db <- getStorageDB
+  let mpdb = MP.MPDB{MP.ldb=db, MP.stateRoot=addressStateContractRoot addressState}
+  kvs <- MP.unsafeGetAllKeyVals mpdb
+  return $ map (fmap $ fromInteger . rlpDecode . rlpDeserialize . rlpDecode) kvs

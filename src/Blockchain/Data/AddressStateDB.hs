@@ -22,33 +22,22 @@ module Blockchain.Data.AddressStateDB (
   getStorageKeyFromHash
 ) where 
 
-
-import Database.Persist hiding (get)
-import Database.Persist.Class
-import Database.Persist.Types
-import Database.Persist.TH
-import Database.Persist.Postgresql as SQL hiding (get)
-
-import Blockchain.DBM
 import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
 
-import Blockchain.ExtDBs
 import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.Data.RLP
+import Blockchain.DB.HashDB
+import Blockchain.DB.StateDB
 import Blockchain.SHA
 import Blockchain.Util
-import Blockchain.Data.BlockDB
-import Blockchain.Data.Transaction
 import Blockchain.Data.DataDefs
+import qualified Blockchain.Database.MerklePatricia as MP
+import qualified Blockchain.Database.MerklePatricia.Internal as MP
 
 import Data.Binary
 import qualified Data.ByteString.Lazy as BL
-import Data.Functor
-import Data.List
-import Data.Time
-import qualified Data.ByteString as B
 
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
@@ -59,7 +48,7 @@ import Control.Monad.Trans.Resource
 import qualified Data.NibbleString as N
 
 blankAddressState:: AddressState
-blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=emptyTriePtr, addressStateCodeHash=hash "" }
+blankAddressState = AddressState { addressStateNonce=0, addressStateBalance=0, addressStateContractRoot=MP.emptyTriePtr, addressStateCodeHash=hash "" }
 
 
 instance Format AddressState where
@@ -87,9 +76,10 @@ instance RLPSerializable AddressState where
       } 
   rlpDecode x = error $ "Missing case in rlpDecode for AddressState: " ++ show (pretty x)
 
-getAddressState::Address->DBM AddressState
+getAddressState::(HasStateDB m, HasHashDB m)=>Address->m AddressState
 getAddressState address = do
-    states <- getKeyVal $ addressAsNibbleString address
+    db <- getStateDB
+    states <- MP.getKeyVal db $ addressAsNibbleString address
     case states of
       Nothing -> do
         -- Querying an absent state counts as initializing it.
@@ -98,32 +88,40 @@ getAddressState address = do
         where b = blankAddressState
       Just s -> return $ (rlpDecode . rlpDeserialize . rlpDecode) s
         
-getAllAddressStates::DBM [(Address, AddressState)]
-getAllAddressStates = mapM convert =<< getAllKeyVals
+getAllAddressStates::(HasHashDB m, HasStateDB m, MonadResource m)=>m [(Address, AddressState)]
+getAllAddressStates = do
+  sdb <- getStateDB
+  mapM convert =<<  MP.unsafeGetAllKeyVals sdb
   where
-    convert::(N.NibbleString, RLPObject)-> DBM (Address, AddressState)
+    convert::(HasHashDB m, MonadResource m)=>(N.NibbleString, RLPObject)-> m (Address, AddressState)
     convert (k, v) = do
       Just k' <- getAddressFromHash k
       return (k', rlpDecode . rlpDeserialize . rlpDecode $ v)
 
-getAddressFromHash :: N.NibbleString -> DBM (Maybe Address)
+getAddressFromHash::(HasHashDB m, MonadResource m)=>N.NibbleString -> m (Maybe Address)
 getAddressFromHash =
   liftM (fmap addressFromNibbleString) . hashDBGet
 
-getStorageKeyFromHash :: N.NibbleString -> DBM (Maybe Word256)
+getStorageKeyFromHash::(HasHashDB m, MonadResource m)=>N.NibbleString -> m (Maybe Word256)
 getStorageKeyFromHash  =
   liftM (fmap (decode . BL.fromStrict . nibbleString2ByteString) ) . hashDBGet  
 
-putAddressState::Address->AddressState->DBM ()
+putAddressState::(HasStateDB m, HasHashDB m)=>Address->AddressState->m ()
 putAddressState address newState = do
   hashDBPut addrNibbles
-  putKeyVal addrNibbles $ rlpEncode $ rlpSerialize $ rlpEncode newState
+  db <- getStateDB
+  
+  db' <- MP.putKeyVal db addrNibbles $ rlpEncode $ rlpSerialize $ rlpEncode newState
+  setStateDBStateRoot (MP.stateRoot db')
   where addrNibbles = addressAsNibbleString address
 
-deleteAddressState::Address->DBM ()
-deleteAddressState address = 
-  deleteKey (addressAsNibbleString address)
+deleteAddressState::(HasStateDB m, MonadResource m)=>Address->m ()
+deleteAddressState address = do
+  db <- getStateDB
+  db' <- MP.deleteKey db (addressAsNibbleString address)
+  setStateDBStateRoot $ MP.stateRoot db'
 
-addressStateExists::Address->DBM Bool
-addressStateExists address = 
-  keyExists (addressAsNibbleString address)
+addressStateExists::(HasStateDB m, MonadResource m)=>Address->m Bool
+addressStateExists address = do
+  db <- getStateDB
+  MP.keyExists db (addressAsNibbleString address)
