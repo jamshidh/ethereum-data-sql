@@ -113,3 +113,36 @@ TransactionResult json
     newStorage String
     deletedStorage String
     deriving Show
+
+UserN json
+    email String
+    loginPassHash BS.ByteString
+    lastLogin UTCTime
+    numLogins Int
+    verified Bool
+    verkey BS.ByteString
+    deriving Show Read Eq   
+
+UserData json
+    encryptedKey BS.ByteString
+    address Address
+    userId UserNId
+    deriving Show Read Eq
+    
+BlockApp json
+    name String
+    developerName String
+    developerEmail String
+    appUrl String
+    repoUrl String Maybe
+    loginPassHash BS.ByteString
+    verified Bool
+    verkey BS.ByteString
+    deriving Show Read Eq
+
+BlockAppLogin json
+    userId UserNId
+    blockAppId BlockAppId
+    timestamp UTCTime
+    ip String
+    deriving Show Read Eq

@@ -45,7 +45,7 @@ import Blockchain.Data.MiscJSON
 entityDefs :: [EntityDef]
 entityDefs = $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] 
+share [mkPersist sqlSettings, mkMigrate "migrateAll"]  -- annoying: postgres doesn't like tables called user
     $(persistFileWith lowerCaseSettings "src/Blockchain/Data/DataDefs.txt")
 
 
