@@ -69,14 +69,18 @@ library
                    Blockchain.Data.Address
                    Blockchain.Data.AddressStateDB
                    Blockchain.Data.BlockDB
+                   Blockchain.Data.CanonicalGenesis
                    Blockchain.Data.Code
                    Blockchain.Data.DataDefs
                    Blockchain.Data.DiffDB
                    Blockchain.Data.GenesisBlock
+                   Blockchain.Data.GenesisInfo
                    Blockchain.Data.Json
                    Blockchain.Data.Log
                    Blockchain.Data.PersistTypes
                    Blockchain.Data.RawTransaction
+                   Blockchain.Data.StablenetGenesis
+                   Blockchain.Data.TestnetGenesis
                    Blockchain.Data.Transaction
                    Blockchain.Data.TransactionReceipt
                    Blockchain.Data.TransactionResult
