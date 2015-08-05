@@ -84,7 +84,7 @@ genesisInfoToGenesisBlock gi = do
          
 
 
-initializeGenesisBlock::(HasStateDB m, HasCodeDB m, HasBlockDB m, HasSQLDB m, HasHashDB m)=>
+initializeGenesisBlock::(HasStateDB m, HasCodeDB m, HasSQLDB m, HasHashDB m)=>
                         Bool->m Block
 initializeGenesisBlock altGenBlock = do
   genesisBlock <- genesisInfoToGenesisBlock canonicalGenesisInfo

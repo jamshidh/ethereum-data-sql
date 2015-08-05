@@ -47,7 +47,7 @@ detailsDBGet key = do
   db <- getDetailsDB
   DB.get db def key
 
-getBestBlockHash::(HasDetailsDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m, HasBlockDB m)=>
+getBestBlockHash::(HasDetailsDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
                   Bool->m SHA
 getBestBlockHash altGenBlock = do
   maybeBestHash <- detailsDBGet "best"
@@ -58,7 +58,7 @@ getBestBlockHash altGenBlock = do
       return bhSHA
     Just bestHash -> return $ decode $ BL.fromStrict $ bestHash
 
-getGenesisBlockHash::(HasDetailsDB m, HasBlockDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
+getGenesisBlockHash::(HasDetailsDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
                      Bool->m SHA
 getGenesisBlockHash altGenBlock = do
   maybeGenesisHash <- detailsDBGet "genesis"
@@ -69,10 +69,10 @@ getGenesisBlockHash altGenBlock = do
       return bhSHA
     Just bestHash -> return $ decode $ BL.fromStrict $ bestHash
 
-getBestBlock::(HasDetailsDB m, HasBlockDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
+getBestBlock::(HasDetailsDB m, HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
               Bool->m Block
 getBestBlock altGenBlock = do
   bestBlockHash <- getBestBlockHash altGenBlock
-  bestBlock <- getBlock bestBlockHash
+  bestBlock <- getBlockLite bestBlockHash
   return $ fromMaybe (error $ "Missing block in database: " ++ show (pretty bestBlockHash)) bestBlock
 
