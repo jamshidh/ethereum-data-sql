@@ -52,7 +52,7 @@ detailsDBGet key = do
   db <- getDetailsDB
   DB.get db def key
 
-getBestBlockHash::(HasHashDB m, HasStateDB m, HasCodeDB m, HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>
+getBestBlockHash::(HasHashDB m, HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>
                   m SHA
 getBestBlockHash = do
   db <- getSQLDB
@@ -65,9 +65,9 @@ getBestBlockHash = do
         return $ a E.^. BlockDataRefHash
   case ret of
     [x] -> return $ E.unValue x
-    [] -> blockHash <$> initializeGenesisBlock
+    [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
   
-getGenesisBlockHash::(HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
+getGenesisBlockHash::(HasHashDB m, HasSQLDB m)=>
                      m SHA
 getGenesisBlockHash = do
   db <- getSQLDB
@@ -79,9 +79,9 @@ getGenesisBlockHash = do
         return $ a E.^. BlockDataRefHash
   case ret of
     [x] -> return $ E.unValue x
-    [] -> blockHash <$> initializeGenesisBlock
+    [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
 
-getBestBlock::(HasCodeDB m, HasHashDB m, HasSQLDB m, HasStateDB m)=>
+getBestBlock::(HasHashDB m, HasSQLDB m)=>
               m Block
 getBestBlock = do
   bestBlockHash <- getBestBlockHash

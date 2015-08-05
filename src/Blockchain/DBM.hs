@@ -43,7 +43,6 @@ import Blockchain.DB.StateDB
 
 data DBs =
   DBs {
-    stateDB'::MP.MPDB,
     codeDB'::CodeDB,
     hashDB'::HashDB,
     sqlDB'::SQLDB
@@ -66,13 +65,11 @@ openDBs::(MonadResource m, MonadBaseControl IO m)=>String->m DBs
 openDBs theType = do
   homeDir <- liftIO getHomeDirectory                     
   liftIO $ createDirectoryIfMissing False $ homeDir </> dbDir theType
-  sdb <- DB.open (homeDir </> dbDir theType ++ stateDBPath) options
   sqldb <-   runNoLoggingT  $ SQL.createPostgresqlPool connStr 20
   SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
   return $ DBs
-      MP.MPDB{ MP.ldb=sdb, MP.stateRoot=error "no stateRoot defined"}
-      sdb
-      sdb
+      (error "codedb undefined")
+      (error "hashdb undefined")
       sqldb
 
 openDBsLite :: SQL.ConnectionString -> ResourceT IO DBsLite
