@@ -1,21 +1,24 @@
 
 module Blockchain.DB.StateDB (
+  StateDB,
   HasStateDB(..),
   getStateRoot
   ) where
 
 import Control.Monad.Trans.Resource
 
-import Blockchain.Database.MerklePatricia
+import qualified Blockchain.Database.MerklePatricia as MP
+
+type StateDB = MP.MPDB
 
 class MonadResource m=>
       HasStateDB m where
-  getStateDB::Monad m=>m MPDB
-  setStateDBStateRoot::Monad m=>SHAPtr->m ()
+  getStateDB::Monad m=>m MP.MPDB
+  setStateDBStateRoot::Monad m=>MP.SHAPtr->m ()
 
 
-getStateRoot::HasStateDB m=>m SHAPtr
+getStateRoot::HasStateDB m=>m MP.SHAPtr
 getStateRoot = do
   db <- getStateDB
-  return $ stateRoot db
+  return $ MP.stateRoot db
 

@@ -11,27 +11,18 @@ module Blockchain.DB.DetailsDB (
   ) where
 
 import Control.Monad.Trans.Resource
-import Data.Binary
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as BL
 import Data.Default
-import Data.Functor
-import Data.List
 import Data.Maybe
 import qualified Database.Esqueleto as E
 import qualified Database.LevelDB as DB
-import qualified Database.Persist as P
 import qualified Database.Persist.Sql as SQL
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.BlockDB
 import Blockchain.Data.DataDefs
-import Blockchain.Data.GenesisBlock
-import Blockchain.DB.BlockDB
-import Blockchain.DB.CodeDB
 import Blockchain.DB.HashDB
 import Blockchain.DB.SQLDB
-import Blockchain.DB.StateDB
 import Blockchain.SHA
 
 type DetailsDB = DB.DB
@@ -66,6 +57,7 @@ getBestBlockHash = do
   case ret of
     [x] -> return $ E.unValue x
     [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
+    _ -> error "getBestBlockHash can't handle a tie yet, yet that is what we have."
   
 getGenesisBlockHash::(HasHashDB m, HasSQLDB m)=>
                      m SHA
@@ -80,6 +72,7 @@ getGenesisBlockHash = do
   case ret of
     [x] -> return $ E.unValue x
     [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
+    _ -> error "getGenesisBlockHash called, but there are multiple genesis blocks!  This is an error."
 
 getBestBlock::(HasHashDB m, HasSQLDB m)=>
               m Block

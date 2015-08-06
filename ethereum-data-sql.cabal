@@ -93,6 +93,7 @@ library
                    Blockchain.DB.StateDB
                    Blockchain.DB.StorageDB
                    Blockchain.ExtDBs
+                   Blockchain.Setup
     other-modules:
                    Blockchain.Data.MiscJSON
     C-sources: fastNonceFinder/nonceFinder.c
@@ -101,3 +102,12 @@ library
     buildable: True
     hs-source-dirs: src
 
+executable ethereum-setup
+    default-language: Haskell98
+    ghc-options: -Wall -O2
+    build-depends: 
+                   base >= 4 && < 5
+                 , ethereum-data-sql
+    buildable: True
+    main-is: Main.hs
+    hs-source-dirs: exec_src
