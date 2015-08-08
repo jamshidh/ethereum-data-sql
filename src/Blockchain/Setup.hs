@@ -91,6 +91,7 @@ oneTimeSetup = do
     runResourceT $ do
       homeDir <- liftIO getHomeDirectory                     
 
+      liftIO $ createDirectoryIfMissing False $ homeDir </> dbDir "h"
       sdb <- DB.open (homeDir </> dbDir "h" ++ stateDBPath)
              DB.defaultOptions{DB.createIfMissing=True, DB.cacheSize=1024}
       let hdb = sdb
@@ -100,8 +101,8 @@ oneTimeSetup = do
       pool <- runNoLoggingT $ createPostgresqlPool connStr 20
 
       flip runStateT (SetupDBs smpdb hdb cdb pool) $ do
-        initializeGenesisBlock
         addCode B.empty --blank code is the default for Accounts, but gets added nowhere else.
+        initializeGenesisBlock
 
   return ()
 
