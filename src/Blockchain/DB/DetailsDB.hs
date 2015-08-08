@@ -56,7 +56,7 @@ getBestBlockHash = do
         return $ a E.^. BlockDataRefHash
   case ret of
     [x] -> return $ E.unValue x
-    [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
+    [] -> error "Ethereum DBs are blank, you need to set them up by running 'ethereum-setup'"
     _ -> error "getBestBlockHash can't handle a tie yet, yet that is what we have."
   
 getGenesisBlockHash::(HasHashDB m, HasSQLDB m)=>
@@ -71,7 +71,7 @@ getGenesisBlockHash = do
         return $ a E.^. BlockDataRefHash
   case ret of
     [x] -> return $ E.unValue x
-    [] -> error "Ethereum DBs are blank, you need to set them up before running this program"
+    [] -> error "Ethereum DBs are blank, you need to set them up by running 'ethereum-setup'"
     _ -> error "getGenesisBlockHash called, but there are multiple genesis blocks!  This is an error."
 
 getBestBlock::(HasHashDB m, HasSQLDB m)=>
