@@ -74,6 +74,7 @@ library
                    Blockchain.Data.Json
                    Blockchain.Data.Log
                    Blockchain.Data.PersistTypes
+                   Blockchain.Data.ProcessedDB
                    Blockchain.Data.RawTransaction
                    Blockchain.Data.StablenetGenesis
                    Blockchain.Data.TestnetGenesis
