@@ -8,11 +8,13 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger (runNoLoggingT)
 import Control.Monad.Trans
+import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource
 import Control.Monad.Trans.State
 import qualified Data.ByteString as B
 import qualified Database.LevelDB as DB
-import qualified Database.Persist.Postgresql as SQL
+--import qualified Database.Persist.GenericSql.Raw as SQL
+import Database.Persist.Postgresql hiding (get)
 import System.Directory
 import System.FilePath
 
@@ -62,26 +64,42 @@ instance HasSQLDB SetupDBM where
   getSQLDB = fmap sqlDB get
 
 
-connStr::SQL.ConnectionString
+connStr::ConnectionString
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
 
 oneTimeSetup::IO ()
 oneTimeSetup = do
+  runNoLoggingT $ withPostgresqlConn connStr $ runReaderT $ do
+    runMigration migrateAll
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (block_id);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (number);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (hash);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (parent_hash);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (coinbase);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (total_difficulty);" []
+
+    rawExecute "CREATE INDEX CONCURRENTLY ON address_state_ref (address);" []
+
+    rawExecute "CREATE INDEX CONCURRENTLY ON raw_transaction (from_address);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON raw_transaction (to_address);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON raw_transaction (block_id);" []
+    rawExecute "CREATE INDEX CONCURRENTLY ON raw_transaction (block_number);" [] 
+
+    rawExecute "CREATE INDEX CONCURRENTLY ON storage (key);" []
+
   _ <-
     runResourceT $ do
       homeDir <- liftIO getHomeDirectory                     
+
       sdb <- DB.open (homeDir </> dbDir "h" ++ stateDBPath)
              DB.defaultOptions{DB.createIfMissing=True, DB.cacheSize=1024}
       let hdb = sdb
           cdb = sdb
-      sqldb <-   runNoLoggingT  $ SQL.createPostgresqlPool connStr 20
-      SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
+          smpdb = MP.MPDB{MP.ldb=sdb}
+          
+      pool <- runNoLoggingT $ createPostgresqlPool connStr 20
 
-      flip runStateT (SetupDBs
-                           MP.MPDB{MP.ldb=sdb}
-                           hdb
-                           cdb
-                           sqldb) $ do
+      flip runStateT (SetupDBs smpdb hdb cdb pool) $ do
         initializeGenesisBlock
         addCode B.empty --blank code is the default for Accounts, but gets added nowhere else.
 
