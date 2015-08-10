@@ -1,10 +1,16 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, TypeSynonymInstances, FlexibleInstances #-}
 
 module Blockchain.Data.GenesisInfo (
   GenesisInfo(..)
   ) where
 
+import Control.Applicative
+import Data.Aeson
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Base16 as B16
+import qualified Data.ByteString.Char8 as BC
+import Data.Functor
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.Word
@@ -31,4 +37,57 @@ data GenesisInfo =
     genesisInfoExtraData::Integer,
     genesisInfoMixHash::SHA,
     genesisInfoNonce::Word64
-}
+} deriving (Show)
+
+instance FromJSON SHA where
+  parseJSON (String s) =
+    case B16.decode $ BC.pack $ T.unpack s of
+      (x, "") -> SHA <$> (return $ bytesToWord256 $ B.unpack x)
+      _ -> error "bad format when calling FromJSON for SHA"
+
+instance ToJSON SHA where
+  toJSON (SHA x) = undefined
+
+instance FromJSON Word160 where
+  parseJSON (String s) =
+    case B16.decode $ BC.pack $ T.unpack s of
+      (x, "") -> return $ bytesToWord160 $ B.unpack x
+      _ -> error "bad format when calling FromJSON for Word160"
+
+instance ToJSON Word160 where
+  toJSON = undefined
+
+instance FromJSON GenesisInfo where
+  parseJSON (Object o) =
+    GenesisInfo <$>
+    o .: "parentHash" <*>
+    (return $ SHA 0xc0) <*> --UnclesHash"
+    o .: "coinbase" <*>
+    o .: "AccountInfo" <*>
+    (return emptyTriePtr) <*> --TransactionsRoot
+    (return emptyTriePtr) <*> --ReceiptsRoot
+    (return $ B.replicate 256 0) <*> --LogBloom
+    o .: "difficulty" <*>
+    (return 0) <*> --number
+    o .: "gasLimit" <*>
+    (return 0) <*> --gasUsed
+    o .: "timestamp" <*>
+    o .: "extraData" <*>
+    o .: "mixhash" <*>
+    o .: "nonce"
+
+  
+instance ToJSON GenesisInfo where
+  toJSON (GenesisInfo ph _ cb ai _ _ _ d _ gl _ ts ed mh n) =
+    object [
+    "parentHash" .= ph,
+    "coinbase" .= cb,
+    "AccountInfo" .= ai,
+    "difficulty" .= d,
+    "gasLimit" .= gl,
+    "timestamp" .= ts,
+    "extraData" .= ed,
+    "mixhash" .= mh,
+    "nonce" .= n
+    ]
+
