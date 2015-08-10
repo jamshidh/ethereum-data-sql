@@ -5,7 +5,6 @@ module Blockchain.Data.StablenetGenesis where
 
 import Data.Bits
 import qualified Data.ByteString as B
-import Data.Time
 import Data.Time.Clock.POSIX
 
 import Blockchain.Data.Address
@@ -15,7 +14,8 @@ import Blockchain.ExtWord
 import Blockchain.SHA
 
 
-genesisInfo =
+stablenetGenesisInfo::GenesisInfo
+stablenetGenesisInfo =
   GenesisInfo {
     genesisInfoParentHash = SHA 0,
     genesisInfoUnclesHash = hash (B.pack [0xc0]), 
@@ -33,7 +33,8 @@ genesisInfo =
     genesisInfoMixHash = SHA 0,
     genesisInfoNonce = 42 -- hash $ B.pack [42]
     }
-  
+
+alternateAddresses::[Word160]
 alternateAddresses =
         [
           0xe1fd0d4a52b75a694de8b55528ad48e2e2cf7859,

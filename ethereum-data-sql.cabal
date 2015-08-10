@@ -24,7 +24,6 @@ library
                  , base16-bytestring
                  , binary
                  , bytestring
-                 , unordered-containers
                  , containers
                  , cryptohash
                  , data-default
@@ -39,15 +38,16 @@ library
                  , mtl
                  , network
                  , nibblestring
+                 , persistent
+                 , persistent-template
+                 , persistent-postgresql
                  , resourcet
                  , SHA2
                  , time
                  , transformers
+                 , unordered-containers
                  , vector
                  , ansi-wl-pprint
-                 , persistent
-                 , persistent-template
-                 , persistent-postgresql
                  , monad-logger
                  , aeson
                  , syb
@@ -104,6 +104,7 @@ executable ethereum-setup
     build-depends: 
                    base >= 4 && < 5
                  , ethereum-data-sql
+                 , hflags
     buildable: True
     main-is: Main.hs
     hs-source-dirs: exec_src
