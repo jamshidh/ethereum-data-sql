@@ -8,29 +8,22 @@ module Blockchain.Data.GenesisBlock (
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Resource
-import Data.Bits
-import qualified Data.ByteString as B
-import Data.Time
-import Data.Time.Clock.POSIX
 
 import Blockchain.Database.MerklePatricia
 
-import Blockchain.Constants
 import Blockchain.Data.Address
 import Blockchain.Data.AddressStateDB
 import Blockchain.Data.BlockDB
 import Blockchain.Data.CanonicalGenesis
 import Blockchain.Data.GenesisInfo
 import Blockchain.Data.StablenetGenesis
-import Blockchain.Data.TestnetGenesis
+--import Blockchain.Data.TestnetGenesis
 import Blockchain.Data.DiffDB
-import Blockchain.DB.BlockDB
 import Blockchain.DB.CodeDB
 import Blockchain.DB.HashDB
 import Blockchain.DB.StateDB
 import Blockchain.DB.SQLDB
 import Blockchain.ExtWord
-import Blockchain.SHA
 
 --import Debug.Trace
 
@@ -86,8 +79,8 @@ genesisInfoToGenesisBlock gi = do
 
 initializeGenesisBlock::(HasStateDB m, HasCodeDB m, HasSQLDB m, HasHashDB m)=>
                         Bool->m Block
-initializeGenesisBlock altGenBlock = do
-  genesisBlock <- genesisInfoToGenesisBlock canonicalGenesisInfo
+initializeGenesisBlock useAltGenesis = do
+  genesisBlock <- genesisInfoToGenesisBlock (if useAltGenesis then stablenetGenesisInfo else canonicalGenesisInfo)
   genBlkId <- putBlock genesisBlock
   genAddrStates <- getAllAddressStates
   let diffFromPair (addr', addrS) = CreateAddr addr' addrS

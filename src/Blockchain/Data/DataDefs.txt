@@ -146,3 +146,7 @@ BlockAppLogin json
     timestamp UTCTime
     ip String
     deriving Show Read Eq
+
+Processed json
+    blockId BlockId
+    deriving Show

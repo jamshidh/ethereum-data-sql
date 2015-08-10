@@ -35,7 +35,6 @@ import Blockchain.Constants
 import Blockchain.Data.DataDefs
 import qualified Blockchain.Database.MerklePatricia as MP
 import Blockchain.DB.CodeDB
-import Blockchain.DB.DetailsDB
 import Blockchain.DB.HashDB
 import Blockchain.DB.SQLDB
 import Blockchain.DB.StateDB
@@ -44,8 +43,6 @@ import Blockchain.DB.StateDB
 
 data DBs =
   DBs {
-    detailsDB'::DetailsDB,
-    stateDB'::MP.MPDB,
     codeDB'::CodeDB,
     hashDB'::HashDB,
     sqlDB'::SQLDB
@@ -68,15 +65,11 @@ openDBs::(MonadResource m, MonadBaseControl IO m)=>String->m DBs
 openDBs theType = do
   homeDir <- liftIO getHomeDirectory                     
   liftIO $ createDirectoryIfMissing False $ homeDir </> dbDir theType
-  ddb <- DB.open (homeDir </> dbDir theType ++ detailsDBPath) options
-  sdb <- DB.open (homeDir </> dbDir theType ++ stateDBPath) options
   sqldb <-   runNoLoggingT  $ SQL.createPostgresqlPool connStr 20
   SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
   return $ DBs
-      ddb
-      MP.MPDB{ MP.ldb=sdb, MP.stateRoot=error "no stateRoot defined"}
-      sdb
-      sdb
+      (error "codedb undefined")
+      (error "hashdb undefined")
       sqldb
 
 openDBsLite :: SQL.ConnectionString -> ResourceT IO DBsLite

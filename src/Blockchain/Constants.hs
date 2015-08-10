@@ -28,8 +28,23 @@ _Mwei = 1000000
 _Kwei = 1000
 wei = 1
 
+--------
 
 minimumDifficulty=131072
+
+--difficultyDurationLimit=12
+difficultyDurationLimit=13
+
+difficultyAdjustment=11::Int
+
+--minGasLimit = 125000
+minGasLimit = 5000
+
+--rewardBase = 1500 * finney
+rewardBase = 5000 * finney
+
+-------------
+
 
 blockDBPath::String
 blockDBPath="/blocks/"
