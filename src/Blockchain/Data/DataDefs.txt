@@ -124,7 +124,7 @@ UserN json
     deriving Show Read Eq   
 
 UserData json
-    encryptedKey BS.ByteString
+    encryptedWallet String
     address Address
     userId UserNId
     deriving Show Read Eq
