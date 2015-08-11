@@ -47,7 +47,7 @@ data: 0x00000000000000000000000000000000000000000000000000000000000003e800000000
 
 
 instance Format PostTransactionState where
-  format (PostTransactionState x) = show $ pretty x
+  format (PostTransactionState x) = format x
 
 instance Format TransactionReceipt where
   format (TransactionReceipt t p gasUsed) =

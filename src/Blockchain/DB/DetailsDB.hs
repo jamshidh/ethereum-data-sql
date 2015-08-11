@@ -7,7 +7,8 @@ module Blockchain.DB.DetailsDB (
   detailsDBGet,
   getBestBlockHash,
   getGenesisBlockHash,
-  getBestBlock
+  getBestBlock,
+  getBestProcessedBlock
   ) where
 
 import Control.Monad.Trans.Resource
@@ -17,12 +18,12 @@ import Data.Maybe
 import qualified Database.Esqueleto as E
 import qualified Database.LevelDB as DB
 import qualified Database.Persist.Sql as SQL
-import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.BlockDB
 import Blockchain.Data.DataDefs
 import Blockchain.DB.HashDB
 import Blockchain.DB.SQLDB
+import Blockchain.Format
 import Blockchain.SHA
 
 type DetailsDB = DB.DB
@@ -58,7 +59,24 @@ getBestBlockHash = do
     [x] -> return $ E.unValue x
     [] -> error "Ethereum DBs are blank, you need to set them up by running 'ethereum-setup'"
     _ -> error "getBestBlockHash can't handle a tie yet, yet that is what we have."
-  
+
+getBestProcessedBlockHash::(HasHashDB m, HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>
+                  m SHA
+getBestProcessedBlockHash = do
+  db <- getSQLDB
+  ret <-
+    runResourceT $
+    flip SQL.runSqlPool db $ do
+      E.select $ E.from $ \(bd `E.InnerJoin` processed) -> do
+        E.on (bd E.^. BlockDataRefBlockId E.==. processed E.^. ProcessedBlockId)
+        E.limit 1
+        E.orderBy [E.desc (bd E.^. BlockDataRefTotalDifficulty)]
+        return $ bd E.^. BlockDataRefHash
+  case ret of
+    [x] -> return $ E.unValue x
+    [] -> error "Ethereum DBs are blank, you need to set them up by running 'ethereum-setup'"
+    _ -> error "getBestBlockHash can't handle a tie yet, yet that is what we have."
+
 getGenesisBlockHash::(HasHashDB m, HasSQLDB m)=>
                      m SHA
 getGenesisBlockHash = do
@@ -79,5 +97,12 @@ getBestBlock::(HasHashDB m, HasSQLDB m)=>
 getBestBlock = do
   bestBlockHash <- getBestBlockHash
   bestBlock <- getBlockLite bestBlockHash
-  return $ fromMaybe (error $ "Missing block in database: " ++ show (pretty bestBlockHash)) bestBlock
+  return $ fromMaybe (error $ "Missing block in database: " ++ format (bestBlockHash)) bestBlock
+
+getBestProcessedBlock::(HasHashDB m, HasSQLDB m)=>
+              m Block
+getBestProcessedBlock = do
+  bestBlockHash <- getBestProcessedBlockHash
+  bestBlock <- getBlockLite bestBlockHash
+  return $ fromMaybe (error $ "Missing block in database: " ++ format (bestBlockHash)) bestBlock
 

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances, FlexibleContexts #-}
 
 module Blockchain.Setup (
   oneTimeSetup
@@ -12,14 +12,17 @@ import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource
 import Control.Monad.Trans.State
 import qualified Data.ByteString as B
+import qualified Database.Esqueleto as E
 import qualified Database.LevelDB as DB
---import qualified Database.Persist.GenericSql.Raw as SQL
+import qualified Database.Persist.Sql as SQL
 import Database.Persist.Postgresql hiding (get)
 import System.Directory
 import System.FilePath
 
 
 import qualified Blockchain.Database.MerklePatricia as MP
+import Blockchain.DB.DetailsDB
+import Blockchain.Data.ProcessedDB
 import Blockchain.Data.DataDefs
 import Blockchain.Data.GenesisBlock
 import Blockchain.DB.CodeDB
@@ -86,6 +89,8 @@ oneTimeSetup useAltGenesis = do
     rawExecute "CREATE INDEX CONCURRENTLY ON raw_transaction (block_number);" [] 
 
     rawExecute "CREATE INDEX CONCURRENTLY ON storage (key);" []
+    
+    rawExecute "CREATE INDEX CONCURRENTLY ON processed (block_id);" []
 
   _ <-
     runResourceT $ do
@@ -103,6 +108,26 @@ oneTimeSetup useAltGenesis = do
       flip runStateT (SetupDBs smpdb hdb cdb pool) $ do
         addCode B.empty --blank code is the default for Accounts, but gets added nowhere else.
         initializeGenesisBlock useAltGenesis
+        genesisBlockId <- getGenesisBlockId
+        putProcessed $ Processed genesisBlockId
 
   return ()
+
+getGenesisBlockId::(HasSQLDB m, MonadResource m, MonadBaseControl IO m)=>
+                   m (E.Key Block)
+getGenesisBlockId = do
+  db <- getSQLDB
+  ret <- runResourceT $
+    SQL.runSqlPool action db
+
+  case ret of
+    [] -> error "called getBlockIdFromBlock on a block that wasn't in the DB"
+    [blockId] -> return (E.unValue blockId)
+  where
+    action =
+      E.select $
+      E.from $ \(bdRef `E.InnerJoin` block) -> do
+        E.on ( bdRef E.^. BlockDataRefBlockId E.==. block E.^. BlockId )
+        E.where_ (bdRef E.^. BlockDataRefNumber E.==. E.val 0 )
+        return $ block E.^. BlockId
 

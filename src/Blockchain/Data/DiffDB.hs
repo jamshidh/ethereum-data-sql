@@ -38,7 +38,6 @@ sqlDiff :: (HasSQLDB m, HasCodeDB m, HasStateDB m, HasHashDB m, MonadResource m,
            BlockDataRefId -> Integer -> SHAPtr -> SHAPtr -> m ()
 sqlDiff blkDataId blkNum oldAddrs newAddrs = do
   db <- getStateDB
-  kvs <- unsafeGetAllKeyVals db
   diffAddrs <- addrDbDiff db oldAddrs newAddrs
   commitSqlDiffs blkDataId blkNum diffAddrs
 
