@@ -95,7 +95,7 @@ calcTotalDifficulty b bid = do
     Nothing ->
       case (blockDataNumber bd) of
         0 -> return (blockDataDifficulty bd)
-        _ ->  error $ "couldn't find parent to calculate difficulty, parent hash is " ++ show (pretty $ blockDataParentHash bd)
+        _ ->  error $ "couldn't find parent to calculate difficulty, parent hash is " ++ format (blockDataParentHash bd)
     Just p -> return $ (blockDataRefTotalDifficulty . entityVal $ p) + (blockDataDifficulty bd)
      
   where getParent h = do
@@ -241,7 +241,7 @@ putBlockLite b = do
 instance Format Block where
   format b@Block{blockBlockData=bd, blockReceiptTransactions=receipts, blockBlockUncles=uncles} =
     CL.blue ("Block #" ++ show (blockDataNumber bd)) ++ " " ++
-    tab (show (pretty $ blockHash b) ++ "\n" ++
+    tab (format (blockHash b) ++ "\n" ++
          format bd ++
          (if null receipts
           then "        (no transactions)\n"
@@ -306,14 +306,13 @@ blockHash (Block info _ _) = hash . rlpSerialize . rlpEncode $ info
 
 instance Format BlockData where
   format b = 
-    "parentHash: " ++ show (pretty
-                            $ blockDataParentHash b) ++ "\n" ++
-    "unclesHash: " ++ show (pretty $ blockDataUnclesHash b) ++ 
+    "parentHash: " ++ format (blockDataParentHash b) ++ "\n" ++
+    "unclesHash: " ++ format (blockDataUnclesHash b) ++ 
     (if blockDataUnclesHash b == hash (B.pack [0xc0]) then " (the empty array)\n" else "\n") ++
     "coinbase: " ++ show (pretty $ blockDataCoinbase b) ++ "\n" ++
-    "stateRoot: " ++ show (pretty $ blockDataStateRoot b) ++ "\n" ++
-    "transactionsRoot: " ++ show (pretty $ blockDataTransactionsRoot b) ++ "\n" ++
-    "receiptsRoot: " ++ show (pretty $ blockDataReceiptsRoot b) ++ "\n" ++
+    "stateRoot: " ++ format (blockDataStateRoot b) ++ "\n" ++
+    "transactionsRoot: " ++ format (blockDataTransactionsRoot b) ++ "\n" ++
+    "receiptsRoot: " ++ format (blockDataReceiptsRoot b) ++ "\n" ++
     "difficulty: " ++ show (blockDataDifficulty b) ++ "\n" ++
     "gasLimit: " ++ show (blockDataGasLimit b) ++ "\n" ++
     "gasUsed: " ++ show (blockDataGasUsed b) ++ "\n" ++

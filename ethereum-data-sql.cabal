@@ -60,7 +60,6 @@ library
                  , crypto-pubkey-types
       		 
     exposed-modules: 
-                   Blockchain.Colors
                    Blockchain.Constants
                    Blockchain.Data.Address
                    Blockchain.Data.AddressStateDB
