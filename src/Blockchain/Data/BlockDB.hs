@@ -213,7 +213,7 @@ putBlockSql b = do
                                                 RawTransactionBlockNumber SQL.=. (fromIntegral $ blockDataNumber (blockBlockData b)) ])
                              lst
 
-putBlockLite ::(HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block->m (Key BlockDataRef)
+putBlockLite ::(HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block->m (Key Block)
 putBlockLite b = do
   db <- getSQLDB
   runResourceT $
@@ -222,8 +222,8 @@ putBlockLite b = do
           blkId <- SQL.insert $ b                      
           toInsert <- lift $ lift $ blk2BlkDataRefLite b blkId
           mapM_ (insertOrUpdate blkId) ((map (\tx -> tx2RawTX tx blkId (blockDataNumber (blockBlockData b)))  (blockReceiptTransactions b)))
-          SQL.insert $ toInsert
-
+          _ <- SQL.insert $ toInsert
+          return blkId
 
         insertOrUpdate blkid rawTX  = do
             (txId :: [Entity RawTransaction])
