@@ -32,16 +32,13 @@ wei = 1
 
 minimumDifficulty=131072
 
---difficultyDurationLimit=12
-difficultyDurationLimit=13
+difficultyDurationLimit testnet =if testnet then 8 else 13
 
 difficultyAdjustment=11::Int
 
---minGasLimit = 125000
-minGasLimit = 5000
+minGasLimit testnet = if testnet then 125000 else 5000
 
---rewardBase = 1500 * finney
-rewardBase = 5000 * finney
+rewardBase testnet = if testnet then 1500 * finney else 5000 * finney
 
 -------------
 

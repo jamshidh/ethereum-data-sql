@@ -17,7 +17,7 @@ import Blockchain.Data.BlockDB
 import Blockchain.Data.CanonicalGenesis
 import Blockchain.Data.GenesisInfo
 import Blockchain.Data.StablenetGenesis
---import Blockchain.Data.TestnetGenesis
+import qualified Blockchain.Data.TestnetGenesis as Testnet
 import Blockchain.Data.DiffDB
 import Blockchain.DB.CodeDB
 import Blockchain.DB.HashDB
@@ -78,9 +78,17 @@ genesisInfoToGenesisBlock gi = do
 
 
 initializeGenesisBlock::(HasStateDB m, HasCodeDB m, HasSQLDB m, HasHashDB m)=>
-                        Bool->m Block
-initializeGenesisBlock useAltGenesis = do
-  genesisBlock <- genesisInfoToGenesisBlock (if useAltGenesis then stablenetGenesisInfo else canonicalGenesisInfo)
+                        String->m Block
+initializeGenesisBlock genesisName = do
+  genesisBlock <-
+      genesisInfoToGenesisBlock
+      (
+       case genesisName of
+         "stablenet" -> stablenetGenesisInfo
+         "canonical" -> canonicalGenesisInfo
+         "testnet" -> Testnet.genesisInfo
+         _ -> error $ "Unknown genesis block name: " ++ genesisName
+      )
   genBlkId <- putBlock genesisBlock
   genAddrStates <- getAllAddressStates
   let diffFromPair (addr', addrS) = CreateAddr addr' addrS
