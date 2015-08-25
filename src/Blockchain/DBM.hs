@@ -72,7 +72,7 @@ openDBs theType = do
       (error "hashdb undefined")
       sqldb
 
-openDBsLite :: SQL.ConnectionString -> ResourceT IO DBsLite
+openDBsLite :: (MonadResource m, MonadBaseControl IO m) => SQL.ConnectionString -> m DBsLite
 openDBsLite connectionString = do
   sqldb <- runNoLoggingT  $ SQL.createPostgresqlPool connectionString 20
   SQL.runSqlPool (SQL.runMigration migrateAll) sqldb
