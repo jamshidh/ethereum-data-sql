@@ -70,8 +70,8 @@ instance HasSQLDB SetupDBM where
 connStr::ConnectionString
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
 
-oneTimeSetup::Bool->IO ()
-oneTimeSetup useAltGenesis = do
+oneTimeSetup::String->IO ()
+oneTimeSetup genesisBlockName = do
   runNoLoggingT $ withPostgresqlConn connStr $ runReaderT $ do
     runMigration migrateAll
     rawExecute "CREATE INDEX CONCURRENTLY ON block_data_ref (block_id);" []
@@ -107,7 +107,7 @@ oneTimeSetup useAltGenesis = do
 
       flip runStateT (SetupDBs smpdb hdb cdb pool) $ do
         addCode B.empty --blank code is the default for Accounts, but gets added nowhere else.
-        initializeGenesisBlock useAltGenesis
+        initializeGenesisBlock genesisBlockName
         genesisBlockId <- getGenesisBlockId
         putProcessed $ Processed genesisBlockId
 
