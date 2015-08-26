@@ -30,6 +30,7 @@ import Debug.Trace
 
 derivePersistField "Transaction"
 derivePersistField "Integer"
+derivePersistField "Point"
 
 integerCap = 1000
 
@@ -73,13 +74,16 @@ instance PersistField SHAPtr where
 instance PersistFieldSql SHAPtr where
   sqlType _ = SqlOther $ T.pack "varchar(64)" 
 
+{-
 instance PersistField Point where
   toPersistValue p@(Point p1 p2) = PersistText . decodeUtf8 . B16.encode $ B.pack $ pointToBytes p
   fromPersistValue (PersistText s) = Right . bytesToPoint . B.unpack . fst . B16.decode . encodeUtf8 $ s
   fromPersistValue _ = Left $ "Point must be persisted as PersistText"
 
+
 instance PersistFieldSql Point where
-  sqlType _ = SqlOther $ T.pack "varchar(64)" 
+  sqlType _ = SqlOther $ T.pack "varchar" 
+-}
 
 instance PersistField SHA where
   toPersistValue (SHA i) = PersistText . T.pack $ showHexFixed 64 i

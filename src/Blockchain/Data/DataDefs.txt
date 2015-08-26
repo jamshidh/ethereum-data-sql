@@ -83,7 +83,7 @@ NeededBlockHashes
     blockId BlockId
 
 PPeer 
-    peerId Point
+    pubkey Point
     ip Text
     port Int
     numSessions Int
@@ -92,6 +92,7 @@ PPeer
     lastTotalDifficulty Integer
     lastBestBlockHash SHA
     version Text
+    deriving Show Read Eq
 
 Storage json
     addressStateRefId AddressStateRefId
