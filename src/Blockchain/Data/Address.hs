@@ -37,12 +37,7 @@ import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.RLP
-import Blockchain.SHA
 import Blockchain.ExtWord
-
-import qualified Database.Persist as P 
-import Database.Persist.Types
-import Database.Persist.TH
 
 import qualified Data.Text as T
 
@@ -52,7 +47,6 @@ import Data.Aeson.Types
 import GHC.Generics
 import qualified Blockchain.Colors as C
 import Blockchain.Format
-import Blockchain.SHA
 import Blockchain.SHA
 import Blockchain.Util
 import Web.PathPieces

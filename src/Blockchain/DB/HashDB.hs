@@ -6,7 +6,6 @@ module Blockchain.DB.HashDB (
   hashDBGet
   ) where
 
-import Control.Monad.IO.Class
 import Control.Monad.State
 import Control.Monad.Trans.Resource
 import Data.Default

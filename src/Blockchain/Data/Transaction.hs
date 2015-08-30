@@ -13,7 +13,6 @@
 
 
 module Blockchain.Data.Transaction (
-  Transaction(..),
   Transaction(transactionNonce,
               transactionGasPrice,
               transactionGasLimit,
@@ -40,37 +39,28 @@ import qualified Blockchain.Colors as CL
 import Blockchain.Data.Address
 import Blockchain.Data.Code
 import Blockchain.Data.RLP
-import Blockchain.ExtWord
 import Blockchain.Format
 import Blockchain.SHA
 import Blockchain.Util
 
 --import Debug.Trace
 
-import Database.Persist
-import Database.Persist.TH
-import Database.Persist.Sql
-import Database.Persist.Types
-
 import Network.Haskoin.Internals hiding (Address)
 import Blockchain.ExtendedECDSA
 
-import Data.Aeson
 import GHC.Generics
-
-
 
 addLeadingZerosTo64::String->String
 addLeadingZerosTo64 x = replicate (64 - length x) '0' ++ x
 
 
 createMessageTX::Monad m=>Integer->Integer->Integer->Address->Integer->B.ByteString->PrvKey->SecretT m Transaction
-createMessageTX n gp gl to val theData prvKey = do
+createMessageTX n gp gl to' val theData prvKey = do
   let unsignedTX = MessageTX {
                      transactionNonce = n,
                      transactionGasPrice = gp,
                      transactionGasLimit = gl,
-                     transactionTo = to,
+                     transactionTo = to',
                      transactionValue = val,
                      transactionData = theData,
                      transactionR = 0,
@@ -83,11 +73,11 @@ createMessageTX n gp gl to val theData prvKey = do
     unsignedTX {
       transactionR = 
         case B16.decode $ B.pack $ map c2w $ addLeadingZerosTo64 $ showHex (sigR signature) "" of
-          (val, "") -> byteString2Integer val
+          (val', "") -> byteString2Integer val'
           _ -> error ("error: sigR is: " ++ showHex (sigR signature) ""),
       transactionS = 
         case B16.decode $ B.pack $ map c2w $ addLeadingZerosTo64 $ showHex (sigS signature) "" of
-          (val, "") -> byteString2Integer val
+          (val', "") -> byteString2Integer val'
           _ -> error ("error: sigS is: " ++ showHex (sigS signature) ""),
       transactionV = if yIsOdd then 0x1c else 0x1b
     }
@@ -111,11 +101,11 @@ createContractCreationTX n gp gl val init' prvKey = do
     unsignedTX {
       transactionR = 
         case B16.decode $ B.pack $ map c2w $ addLeadingZerosTo64 $ showHex (sigR signature) "" of
-          (val, "") -> byteString2Integer val
+          (val', "") -> byteString2Integer val'
           _ -> error ("error: sigR is: " ++ showHex (sigR signature) ""),
       transactionS = 
         case B16.decode $ B.pack $ map c2w $ addLeadingZerosTo64 $ showHex (sigS signature) "" of
-          (val, "") -> byteString2Integer val
+          (val', "") -> byteString2Integer val'
           _ -> error ("error: sigS is: " ++ showHex (sigS signature) ""),
       transactionV = if yIsOdd then 0x1c else 0x1b
     }
@@ -155,9 +145,11 @@ data Transaction =
     transactionV::Word8
     } deriving (Show, Read, Eq, Generic)
 
+isMessageTX::Transaction->Bool
 isMessageTX MessageTX{} = True
 isMessageTX _ = False
 
+isContractCreationTX::Transaction->Bool
 isContractCreationTX ContractCreationTX{} = True
 isContractCreationTX _ = False
 
@@ -183,7 +175,6 @@ instance Format Transaction where
       "value: " ++ show v ++ "\n" ++
       "tInit: " ++ tab (format init') ++ "\n")
 
-
 --partialRLP(De|En)code are used for the signing algorithm
 partialRLPDecode::RLPObject->Transaction
 partialRLPDecode (RLPArray [n, gp, gl, RLPString "", val, i, _, _, _]) = --Note- Address 0 /= Address 000000....  Only Address 0 yields a ContractCreationTX
@@ -192,7 +183,10 @@ partialRLPDecode (RLPArray [n, gp, gl, RLPString "", val, i, _, _, _]) = --Note-
       transactionGasPrice = rlpDecode gp,
       transactionGasLimit = rlpDecode gl,
       transactionValue = rlpDecode val,
-      transactionInit = rlpDecode i
+      transactionInit = rlpDecode i,
+      transactionR = error "transactionR not initialized in partialRLPDecode",
+      transactionS = error "transactionS not initialized in partialRLPDecode",
+      transactionV = error "transactionV not initialized in partialRLPDecode"
       }
 partialRLPDecode (RLPArray [n, gp, gl, toAddr, val, i, _, _, _]) =
     MessageTX {
@@ -201,7 +195,10 @@ partialRLPDecode (RLPArray [n, gp, gl, toAddr, val, i, _, _, _]) =
       transactionGasLimit = rlpDecode gl,
       transactionTo = rlpDecode toAddr,
       transactionValue = rlpDecode val,
-      transactionData = rlpDecode i
+      transactionData = rlpDecode i,
+      transactionR = error "transactionR not initialized in partialRLPDecode",
+      transactionS = error "transactionS not initialized in partialRLPDecode",
+      transactionV = error "transactionV not initialized in partialRLPDecode"
       }
 partialRLPDecode x = error ("rlp object has wrong format in call to partialRLPDecode: " ++ show x)
 

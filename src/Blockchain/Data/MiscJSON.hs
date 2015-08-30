@@ -11,9 +11,6 @@ import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString as B
 import Control.Applicative
 
-import Blockchain.Database.MerklePatricia
-import Blockchain.Data.Code
-import Blockchain.Data.Transaction
 import Crypto.Types.PubKey.ECC
 import Blockchain.SHA
 import Blockchain.Handshake
