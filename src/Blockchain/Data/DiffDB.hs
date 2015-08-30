@@ -8,9 +8,6 @@ module Blockchain.Data.DiffDB (
   ) where
 
 import Database.Persist hiding (get)
-import Database.Persist.Class
-import Database.Persist.Types
-import Database.Persist.TH
 import qualified Database.Persist.Postgresql as SQL hiding (get)
 
 import Blockchain.Database.MerklePatricia.Internal
@@ -78,9 +75,9 @@ addrConvert (Diff.Update k v1 v2) = do
 commitAddr :: (HasStateDB m, HasHashDB m, HasCodeDB m, MonadResource m, MonadBaseControl IO m)=>
               BlockDataRefId -> Integer -> AddrDiffOp -> SQL.SqlPersistT m ()
 
-commitAddr blkDataId blkNum CreateAddr{ addr = addr, state = addrS } = do
+commitAddr blkDataId blkNum CreateAddr{ addr = addr', state = addrS } = do
   Just code <- lift $ getCode ch
-  let aRef = AddressStateRef addr n b cr code blkDataId blkNum -- Should use Lens here, no doubt
+  let aRef = AddressStateRef addr' n b cr code blkDataId blkNum -- Should use Lens here, no doubt
   addrID <- SQL.insert aRef
   db <- lift getStateDB
   addrStorageKVs <- --lift $ lift $ lift $
@@ -92,20 +89,22 @@ commitAddr blkDataId blkNum CreateAddr{ addr = addr, state = addrS } = do
     addrStorageRoot = cr
     decodeKV (k,v) = storageConvert $ Diff.Create (N.unpack k) v
     storageOfKV addrID (CreateStorage k v)= Storage addrID k v
+    --TODO- check if you are OK with the following change
+    storageOfKV _ _ = error "storageOfKV called with wrong params"
 
-commitAddr _ _ DeleteAddr{ addr = addr } = do
-  addrID <- getAddressStateSQL addr "delete"
+commitAddr _ _ DeleteAddr{ addr = addr' } = do
+  addrID <- getAddressStateSQL addr' "delete"
   SQL.deleteWhere [ StorageAddressStateRefId SQL.==. addrID ]
   SQL.delete addrID
 
-commitAddr blkDataId blkNum UpdateAddr{ addr = addr, oldState = addrS1, newState = addrS2 } = do
-  addrID <- getAddressStateSQL addr "update"
+commitAddr blkDataId blkNum UpdateAddr{ addr = addr', oldState = addrS1, newState = addrS2 } = do
+  addrID <- getAddressStateSQL addr' "update"
   SQL.update addrID [ AddressStateRefNonce =. n, AddressStateRefBalance =. b,
                       AddressStateRefLatestBlockDataRefId =. blkDataId,
                       AddressStateRefLatestBlockDataRefNumber =. blkNum]
   db <- lift getStateDB
   storageDiff <- lift $ storageDbDiff db oldAddrStorage newAddrStorage
-  mapM_ (commitStorage addrID) (trace ("Address " ++ formatAddressWithoutColor addr ++ ": " ++ show storageDiff) storageDiff)
+  mapM_ (commitStorage addrID) (trace ("Address " ++ formatAddressWithoutColor addr' ++ ": " ++ show storageDiff) storageDiff)
   where
     AddressState _ _ cr1 _ = addrS1
     oldAddrStorage = cr1
@@ -142,32 +141,32 @@ storageConvert (Diff.Update k v1 v2) = do
 
 commitStorage :: (HasStateDB m, HasHashDB m, MonadResource m)=>SQL.Key AddressStateRef -> StorageDiffOp -> SqlDbM m ()
 
-commitStorage addrID CreateStorage{ key = storageKey, val = storageVal } = do
-  SQL.insert $ Storage addrID storageKey storageVal
+commitStorage addrID CreateStorage{ key = storageKey', val = storageVal } = do
+  _ <- SQL.insert $ Storage addrID storageKey' storageVal
   return ()
 
-commitStorage addrID DeleteStorage{ key = storageKey } = do
-  storageID <- getStorageKeySQL addrID storageKey "delete"
+commitStorage addrID DeleteStorage{ key = storageKey' } = do
+  storageID <- getStorageKeySQL addrID storageKey' "delete"
   SQL.delete storageID
 
-commitStorage addrID UpdateStorage{ key = storageKey, oldVal = _, newVal = storageVal} = do
-  storageID <- getStorageKeySQL addrID storageKey "update"
+commitStorage addrID UpdateStorage{ key = storageKey', oldVal = _, newVal = storageVal} = do
+  storageID <- getStorageKeySQL addrID storageKey' "update"
   SQL.update storageID [ StorageValue =. storageVal ]
   return ()
 
 getAddressStateSQL :: (HasStateDB m, HasHashDB m, MonadResource m)=>Address -> String -> SqlDbM m (SQL.Key AddressStateRef)
-getAddressStateSQL addr s = do
+getAddressStateSQL addr' s = do
   addrIDs <- SQL.selectKeysList
-              [ AddressStateRefAddress SQL.==. addr ] [ LimitTo 1 ]
+              [ AddressStateRefAddress SQL.==. addr' ] [ LimitTo 1 ]
   if null addrIDs
-    then error $ s ++ ": Address not found in SQL db: " ++ formatAddressWithoutColor addr
+    then error $ s ++ ": Address not found in SQL db: " ++ formatAddressWithoutColor addr'
     else return $ head addrIDs
 
 getStorageKeySQL :: (HasStateDB m, HasHashDB m, MonadResource m)=>(SQL.Key AddressStateRef) -> Word256 -> String -> SqlDbM m (SQL.Key Storage)
-getStorageKeySQL addrID storageKey s = do
+getStorageKeySQL addrID storageKey' s = do
   storageIDs <- SQL.selectKeysList
-              [ StorageAddressStateRefId SQL.==. addrID, StorageKey SQL.==. storageKey ]
+              [ StorageAddressStateRefId SQL.==. addrID, StorageKey SQL.==. storageKey' ]
               [ LimitTo 1 ]
   if null storageIDs
-    then error $ s ++ ": Storage key not found in SQL db: " ++ showHex4 storageKey
+    then error $ s ++ ": Storage key not found in SQL db: " ++ showHex4 storageKey'
     else return $ head storageIDs

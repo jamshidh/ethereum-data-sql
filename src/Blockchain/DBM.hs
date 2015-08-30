@@ -19,8 +19,6 @@ module Blockchain.DBM (
   ) where
 
 
-import qualified Database.LevelDB as DB
-
 import Control.Monad.IO.Class
 import Control.Monad.State
 import Control.Monad.Trans.Resource
@@ -33,7 +31,6 @@ import qualified Database.Persist.Postgresql as SQL
 import Blockchain.Constants
 
 import Blockchain.Data.DataDefs
-import qualified Blockchain.Database.MerklePatricia as MP
 import Blockchain.DB.CodeDB
 import Blockchain.DB.HashDB
 import Blockchain.DB.SQLDB
@@ -57,9 +54,6 @@ type DBMLite = StateT DBsLite (ResourceT IO)
 
 connStr::SQL.ConnectionString
 connStr = "host=localhost dbname=eth user=postgres password=api port=5432"
-
-options::DB.Options
-options = DB.defaultOptions {DB.createIfMissing=True, DB.cacheSize=1024}
 
 openDBs::(MonadResource m, MonadBaseControl IO m)=>String->m DBs
 openDBs theType = do

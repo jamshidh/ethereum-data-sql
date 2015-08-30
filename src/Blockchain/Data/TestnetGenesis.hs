@@ -9,6 +9,7 @@ import Blockchain.Constants
 import Blockchain.Data.Address
 import Blockchain.Data.GenesisInfo
 import Blockchain.Database.MerklePatricia
+import Blockchain.ExtWord
 import Blockchain.SHA
 
 genesisInfo::GenesisInfo
@@ -32,6 +33,7 @@ genesisInfo =
     }
   
 
+testnetAccountInfo::[(Word160, Integer)]
 testnetAccountInfo =
         [
           (0x0000000000000000000000000000000000000001, 1 * wei),

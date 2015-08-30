@@ -13,13 +13,15 @@
 
 
 module Blockchain.Data.Transaction (
-  Transaction(transactionNonce,
+  Transaction(..),
+--TODO : Only export the following functions
+{-  Transaction(transactionNonce,
               transactionGasPrice,
               transactionGasLimit,
               transactionTo,
               transactionValue,
               transactionData,
-              transactionInit),
+              transactionInit), -}
   createMessageTX,
   createContractCreationTX,
   isMessageTX,

@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE DeriveGeneric              #-}
 
+--TODO : Take this next line out
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Blockchain.Data.MiscJSON where
        
 import Data.Aeson
