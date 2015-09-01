@@ -20,11 +20,7 @@ import Blockchain.Database.MerklePatricia
 import Blockchain.ExtWord
 import Blockchain.SHA
 
-<<<<<<< HEAD
 canonicalGenesisInfo :: GenesisInfo
-=======
-canonicalGenesisInfo::GenesisInfo
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 canonicalGenesisInfo =
   GenesisInfo {
     genesisInfoParentHash = SHA 0,

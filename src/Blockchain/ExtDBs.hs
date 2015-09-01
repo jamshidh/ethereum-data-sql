@@ -31,10 +31,7 @@ import Blockchain.DB.StorageDB
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MP
 import Blockchain.ExtWord
-<<<<<<< HEAD
 
-=======
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
   
 stateDBPut::HasStateDB m=>B.ByteString->B.ByteString->m ()
 stateDBPut key val = do

@@ -43,8 +43,8 @@ instance FromJSON SHA where
     case B16.decode $ BC.pack $ T.unpack s of
       (x, "") -> SHA <$> (return $ bytesToWord256 $ B.unpack x)
       _ -> error "bad format when calling FromJSON for SHA"
-  parseJSON _ = error "wrong format in parseJSON for SHA"
-           
+  parseJSON _ = undefined
+   
 instance ToJSON SHA where
   toJSON (SHA _) = undefined
 
@@ -53,7 +53,7 @@ instance FromJSON Word160 where
     case B16.decode $ BC.pack $ T.unpack s of
       (x, "") -> return $ bytesToWord160 $ B.unpack x
       _ -> error "bad format when calling FromJSON for Word160"
-  parseJSON _ = error "wrong format in parseJSON for Word160"
+  parseJSON _ = undefined
 
 instance ToJSON Word160 where
   toJSON = undefined
@@ -76,8 +76,7 @@ instance FromJSON GenesisInfo where
     o .: "extraData" <*>
     o .: "mixhash" <*>
     o .: "nonce"
-  parseJSON _ = error "wrong format in parseJSON for GenesisInfo"
-
+  parseJSON _ = undefined
   
 instance ToJSON GenesisInfo where
   toJSON (GenesisInfo ph _ cb ai _ _ _ d _ gl _ ts ed mh n) =

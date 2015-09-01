@@ -3,10 +3,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
---TODO : Take this next line out
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
-
 module Blockchain.Data.PersistTypes where
 
 import Database.Persist
@@ -25,31 +21,17 @@ import Data.Text.Encoding
 
 import Crypto.Types.PubKey.ECC
 import Numeric
-<<<<<<< HEAD
-=======
-
---import Debug.Trace
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 
 derivePersistField "Transaction"
 derivePersistField "Integer"
 derivePersistField "Point"
 
-<<<<<<< HEAD
 integerCap :: Integer
 integerCap = 1000
 
 showHexFixed :: (Integral a, Show a) => Int -> a -> String
 showHexFixed len val = pad $ showHex val ""
     where pad s = if length s >= len then s else pad ('0' : s)
-=======
-integerCap::Integer
-integerCap = 1000
-
-showHexFixed :: (Integral a, Show a) => Int -> a -> String
-showHexFixed len val = padZeros' $ showHex val ""
-    where padZeros' s = if length s >= len then s else padZeros' ('0' : s)
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 
 instance PersistField Address where
   toPersistValue (Address x) = PersistText . T.pack $ showHex  (fromIntegral $ x :: Integer) ""

@@ -13,11 +13,6 @@
 
 
 module Blockchain.Data.Transaction (
-<<<<<<< HEAD
-=======
-  Transaction(..),
---TODO : Only export the following functions
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 {-  Transaction(transactionNonce,
               transactionGasPrice,
               transactionGasLimit,
@@ -25,10 +20,7 @@ module Blockchain.Data.Transaction (
               transactionValue,
               transactionData,
               transactionInit), -}
-<<<<<<< HEAD
   Transaction(..),
-=======
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
   createMessageTX,
   createContractCreationTX,
   isMessageTX,

@@ -89,12 +89,7 @@ commitAddr blkDataId blkNum CreateAddr{ addr = addr', state = addrS } = do
     addrStorageRoot = cr
     decodeKV (k,v) = storageConvert $ Diff.Create (N.unpack k) v
     storageOfKV addrID (CreateStorage k v)= Storage addrID k v
-<<<<<<< HEAD
     storageOfKV _ _ = undefined "Ryan is confident this won't happen"
-=======
-    --TODO- check if you are OK with the following change
-    storageOfKV _ _ = error "storageOfKV called with wrong params"
->>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 
 commitAddr _ _ DeleteAddr{ addr = addr' } = do
   addrID <- getAddressStateSQL addr' "delete"
