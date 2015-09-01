@@ -9,6 +9,7 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 module Blockchain.Data.AddressStateDB (
   AddressState(..),

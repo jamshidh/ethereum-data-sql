@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE DeriveGeneric              #-}
+{-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 module Blockchain.Data.MiscJSON where
        

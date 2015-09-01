@@ -17,9 +17,7 @@ module Blockchain.ExtDBs (
 
 import Control.Monad.State
 import Control.Monad.Trans.Resource
-import Data.Binary hiding (get, put)
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as BL
 import Data.Default
 import qualified Database.LevelDB as DB
 
@@ -27,21 +25,13 @@ import qualified Data.NibbleString as N
 import Blockchain.Data.Address
 import Blockchain.Data.AddressStateDB
 import Blockchain.Data.RLP
-import Blockchain.DBM
 import Blockchain.DB.HashDB
 import Blockchain.DB.StateDB
 import Blockchain.DB.StorageDB
 import qualified Blockchain.Database.MerklePatricia as MP
 import qualified Blockchain.Database.MerklePatricia.Internal as MP
 import Blockchain.ExtWord
-import Blockchain.SHA
-import Blockchain.Util
 
-import Blockchain.DBM
-
-
-
-----
   
 stateDBPut::HasStateDB m=>B.ByteString->B.ByteString->m ()
 stateDBPut key val = do

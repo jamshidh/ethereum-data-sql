@@ -16,25 +16,7 @@ module Blockchain.Data.RawTransaction (
   ) where
 
 
-import Database.Persist
-import Database.Persist.Types
-import Database.Persist.TH
-
-import qualified Data.ByteString as B
-import Text.PrettyPrint.ANSI.Leijen
-
 import Blockchain.Data.DataDefs
-import Blockchain.Data.Address
-import Blockchain.Data.Code
-import qualified Blockchain.Colors as CL
-import Blockchain.Format
-import Blockchain.Data.RLP
-import Blockchain.Util
-import Blockchain.ExtWord
-
-
-import Data.Aeson
-import qualified GHC.Generics as G
 
 {-
 instance Format RawTransaction where

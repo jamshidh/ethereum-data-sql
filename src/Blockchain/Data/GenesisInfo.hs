@@ -9,10 +9,8 @@ import Data.Aeson
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString.Char8 as BC
-import Data.Functor
 import qualified Data.Text as T
 import Data.Time
-import Data.Time.Clock.POSIX
 import Data.Word
 
 import Blockchain.Data.Address
@@ -46,7 +44,7 @@ instance FromJSON SHA where
       _ -> error "bad format when calling FromJSON for SHA"
 
 instance ToJSON SHA where
-  toJSON (SHA x) = undefined
+  toJSON (SHA _) = undefined
 
 instance FromJSON Word160 where
   parseJSON (String s) =

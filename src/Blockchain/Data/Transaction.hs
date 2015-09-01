@@ -13,13 +13,14 @@
 
 
 module Blockchain.Data.Transaction (
-  Transaction(transactionNonce,
+{-  Transaction(transactionNonce,
               transactionGasPrice,
               transactionGasLimit,
               transactionTo,
               transactionValue,
               transactionData,
-              transactionInit),
+              transactionInit), -}
+  Transaction(..),
   createMessageTX,
   createContractCreationTX,
   isMessageTX,

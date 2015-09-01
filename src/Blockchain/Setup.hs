@@ -4,10 +4,8 @@ module Blockchain.Setup (
   oneTimeSetup
   ) where
 
-import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Logger (runNoLoggingT)
-import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource
 import Control.Monad.Trans.State
@@ -19,9 +17,7 @@ import Database.Persist.Postgresql hiding (get)
 import System.Directory
 import System.FilePath
 
-
 import qualified Blockchain.Database.MerklePatricia as MP
-import Blockchain.DB.DetailsDB
 import Blockchain.Data.ProcessedDB
 import Blockchain.Data.DataDefs
 import Blockchain.Data.GenesisBlock

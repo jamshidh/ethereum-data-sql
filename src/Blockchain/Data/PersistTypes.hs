@@ -1,42 +1,37 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Blockchain.Data.PersistTypes where
 
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
-import Database.Persist.Types
 
 import Blockchain.Data.Address
 import Blockchain.Data.Transaction
 import Blockchain.ExtWord
-import Blockchain.Util
 import Blockchain.SHA
 import Blockchain.Database.MerklePatricia
 
-import Control.Applicative
-
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.Text as T
 import Data.Text.Encoding
 
-import Blockchain.Handshake
 import Crypto.Types.PubKey.ECC
 import Numeric
-import Debug.Trace
 
 derivePersistField "Transaction"
 derivePersistField "Integer"
 derivePersistField "Point"
 
+integerCap :: Integer
 integerCap = 1000
 
 showHexFixed :: (Integral a, Show a) => Int -> a -> String
-showHexFixed len val = padZeros $ showHex val ""
-    where padZeros s = if length s >= len then s else padZeros ('0' : s)
+showHexFixed len val = pad $ showHex val ""
+    where pad s = if length s >= len then s else pad ('0' : s)
 
 instance PersistField Address where
   toPersistValue (Address x) = PersistText . T.pack $ showHex  (fromIntegral $ x :: Integer) ""
@@ -88,7 +83,7 @@ instance PersistFieldSql Point where
 instance PersistField SHA where
   toPersistValue (SHA i) = PersistText . T.pack $ showHexFixed 64 i
   fromPersistValue (PersistText s) = Right $ SHA $ (fromIntegral $ ((fst . head .  readHex $ T.unpack s) :: Integer) :: Word256)
-  fromPersistValue x = Left $ T.pack $ "PersistField SHA must be persisted as PersistText"
+  fromPersistValue _ = Left $ T.pack $ "PersistField SHA must be persisted as PersistText"
 
 instance PersistFieldSql SHA where
   sqlType _ = SqlOther $ T.pack "varchar(64)" 
