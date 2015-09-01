@@ -15,7 +15,10 @@ module Blockchain.Data.RawTransaction (
   RawTransaction(..)
   ) where
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 import Blockchain.Data.DataDefs
 
 {-

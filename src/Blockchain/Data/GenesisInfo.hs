@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, TupleSections, TypeSynonymInstances, FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Blockchain.Data.GenesisInfo (
   GenesisInfo(..)
@@ -42,7 +43,8 @@ instance FromJSON SHA where
     case B16.decode $ BC.pack $ T.unpack s of
       (x, "") -> SHA <$> (return $ bytesToWord256 $ B.unpack x)
       _ -> error "bad format when calling FromJSON for SHA"
-
+  parseJSON _ = error "wrong format in parseJSON for SHA"
+           
 instance ToJSON SHA where
   toJSON (SHA _) = undefined
 
@@ -51,6 +53,7 @@ instance FromJSON Word160 where
     case B16.decode $ BC.pack $ T.unpack s of
       (x, "") -> return $ bytesToWord160 $ B.unpack x
       _ -> error "bad format when calling FromJSON for Word160"
+  parseJSON _ = error "wrong format in parseJSON for Word160"
 
 instance ToJSON Word160 where
   toJSON = undefined
@@ -73,6 +76,7 @@ instance FromJSON GenesisInfo where
     o .: "extraData" <*>
     o .: "mixhash" <*>
     o .: "nonce"
+  parseJSON _ = error "wrong format in parseJSON for GenesisInfo"
 
   
 instance ToJSON GenesisInfo where

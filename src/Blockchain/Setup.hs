@@ -97,13 +97,13 @@ oneTimeSetup genesisBlockName = do
              DB.defaultOptions{DB.createIfMissing=True, DB.cacheSize=1024}
       let hdb = sdb
           cdb = sdb
-          smpdb = MP.MPDB{MP.ldb=sdb}
+          smpdb = MP.MPDB{MP.ldb=sdb, MP.stateRoot=error "stateRoot not defined in oneTimeSetup"}
           
       pool <- runNoLoggingT $ createPostgresqlPool connStr 20
 
       flip runStateT (SetupDBs smpdb hdb cdb pool) $ do
         addCode B.empty --blank code is the default for Accounts, but gets added nowhere else.
-        initializeGenesisBlock genesisBlockName
+        _ <- initializeGenesisBlock genesisBlockName
         genesisBlockId <- getGenesisBlockId
         putProcessed $ Processed genesisBlockId
 
@@ -119,6 +119,7 @@ getGenesisBlockId = do
   case ret of
     [] -> error "called getBlockIdFromBlock on a block that wasn't in the DB"
     [blockId] -> return (E.unValue blockId)
+    _ -> error "called getBlockIdFromBlock on a block that appears more than once in the DB"
   where
     action =
       E.select $

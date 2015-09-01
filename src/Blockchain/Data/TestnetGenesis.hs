@@ -10,6 +10,7 @@ import Blockchain.Constants
 import Blockchain.Data.Address
 import Blockchain.Data.GenesisInfo
 import Blockchain.Database.MerklePatricia
+import Blockchain.ExtWord
 import Blockchain.SHA
 
 genesisInfo::GenesisInfo
@@ -32,7 +33,12 @@ genesisInfo =
     genesisInfoNonce = 42 -- hash $ B.pack [42]
     }
   
+<<<<<<< HEAD
 testnetAccountInfo :: [(Word160,Integer)]
+=======
+
+testnetAccountInfo::[(Word160, Integer)]
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 testnetAccountInfo =
         [
           (0x0000000000000000000000000000000000000001, 1 * wei),

@@ -12,6 +12,9 @@
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 
 
+--TODO : Take this next line out
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Blockchain.Data.BlockDB (
   Block(..),
   BlockData(..),
@@ -30,6 +33,7 @@ import Database.Persist hiding (get)
 import qualified Database.Persist.Postgresql as SQL
 import qualified Database.Esqueleto as E
 
+<<<<<<< HEAD
 
 import Data.Binary hiding (get,put)
 import qualified Data.ByteString as B
@@ -41,13 +45,25 @@ import Data.Maybe
 
 import Data.Time.Clock.POSIX
 
+=======
+import Data.Binary hiding (get,put)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
+import Data.Functor
+import Data.List
+import Data.Maybe
+import Data.Time.Clock.POSIX
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 import Numeric
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Blockchain.Data.Address
 import qualified Blockchain.Colors as CL
+<<<<<<< HEAD
 
 import Blockchain.DB.BlockDB
+=======
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 import Blockchain.DB.SQLDB
 
 import Blockchain.ExtWord
@@ -72,6 +88,10 @@ tx2RawTX tx blkId blkNum =
   case tx of
     (MessageTX nonce gp gl to val dat r s v) -> (RawTransaction signer nonce gp gl (Just to) val dat r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
     (ContractCreationTX nonce gp gl val (Code init') r s v) ->  (RawTransaction signer nonce gp gl Nothing val init' r s v blkId (fromIntegral $ blkNum) (hash $ rlpSerialize $ rlpEncode tx))
+<<<<<<< HEAD
+=======
+    -- _ -> error "couldn't convert Transaction to RawTransaction"      
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
   where
     signer = fromMaybe (Address (-1)) $ whoSignedThisTransaction tx
 
@@ -96,8 +116,12 @@ calcTotalDifficulty b _ = do
   where getParent h = do
           SQL.selectFirst [ BlockDataRefHash SQL.==. h ] []
 
+<<<<<<< HEAD
 calcTotalDifficultyLite :: (HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)
                         => Block -> BlockId -> m Integer
+=======
+calcTotalDifficultyLite :: (HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>Block -> BlockId -> m Integer
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 calcTotalDifficultyLite b _ = do
   pool <- getSQLDB
   let bd = blockBlockData b
@@ -114,8 +138,13 @@ calcTotalDifficultyLite b _ = do
   where getParent h = do
           SQL.selectFirst [ BlockDataRefHash SQL.==. h ] []
 
+<<<<<<< HEAD
 blk2BlkDataRef :: (HasSQLDB m, MonadResource m) 
                => Block -> BlockId -> m BlockDataRef
+=======
+blk2BlkDataRef::(HasSQLDB m, MonadResource m) =>
+                Block -> BlockId -> m BlockDataRef
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 blk2BlkDataRef b blkId = do
   difficulty <- calcTotalDifficulty b blkId
   return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
@@ -136,9 +165,15 @@ blk2BlkDataRef b blkId = do
       eD = blockDataExtraData bd
       nc = blockDataNonce bd
       mH = blockDataMixHash bd
+<<<<<<< HEAD
       
 blk2BlkDataRefLite :: (HasSQLDB m, MonadResource m)
                => Block -> BlockId -> m BlockDataRef
+=======
+
+blk2BlkDataRefLite::(HasSQLDB m, MonadResource m) =>
+                    Block -> BlockId -> m BlockDataRef
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
 blk2BlkDataRefLite b blkId = do
   difficulty <- calcTotalDifficultyLite b blkId
   return (BlockDataRef pH uH cB sR tR rR lB d n gL gU t eD nc mH blkId (blockHash b) True True difficulty) --- Horrible! Apparently I need to learn the Lens library, yesterday
@@ -182,6 +217,11 @@ putBlock::(HasSQLDB m, MonadResource m, MonadBaseControl IO m, MonadThrow m)=>
           Block->m (Key BlockDataRef)
 putBlock b = do
   blkDataId <- putBlockSql b
+<<<<<<< HEAD
+=======
+  --let bytes = rlpSerialize $ rlpEncode b
+  --blockDBPut (BL.toStrict $ encode $ blockHash b) bytes
+>>>>>>> f171de2eadd6636faa63373faa631b410a95e7fe
   return blkDataId
 
 

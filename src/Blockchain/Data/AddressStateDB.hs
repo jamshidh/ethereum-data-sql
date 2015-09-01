@@ -11,6 +11,9 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 
+--TODO : Take this next line out
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Blockchain.Data.AddressStateDB (
   AddressState(..),
   blankAddressState,
